@@ -324,3 +324,138 @@ processing, so `webhooks/service.replay(topic)` drains the backlog after a fix.
 **Logs.** Pino JSON on stdout. Every line carries a `requestId` that the API
 also returns in error responses, so a merchant's screenshot is enough to find
 the request.
+
+---
+
+## Going live on `dealzy-9cthr0cs.myshopify.com`
+
+The concrete run for this app's first production install. Written out because
+the general instructions above leave several choices open, and these are the
+ones already made.
+
+**Distribution is Public, not Custom.** Custom locks an app to a single store
+and cannot be undone, which would forfeit the App Store later. A public app
+installs on any store from a direct link *without* review — review only governs
+whether it is discoverable in the App Store. So a public app is installed on a
+paid store today and listed whenever the listing is ready.
+
+### 1. Push, so CI runs
+
+```bash
+git remote add origin <your-remote>
+git push -u origin main
+```
+
+CI builds the Docker image and asserts the container starts. It has never run,
+and that is exactly why the `--allow-scripts` bug in the Dockerfile survived —
+see Traps in HANDOFF.md.
+
+### 2. Request protected customer data access
+
+`shopify app deploy` fails until this is granted, with five errors, one per
+order topic. For a **public** app the request is reviewed rather than granted
+instantly, so start it before anything else — it is the only step that waits on
+someone else.
+
+Partner Dashboard -> App setup -> Protected customer data access. Request the
+protected data plus the four fields a COD order cannot work without: name,
+email, phone, address.
+
+### 3. Host it
+
+```bash
+render blueprint launch
+```
+
+`render.yaml` provisions web, worker, Postgres and Redis together. Check Redis
+is `noeviction` afterwards — an evicted BullMQ key is an order that silently
+never happens.
+
+Point `app.codflow.in` at the web service. A subdomain rather than the apex
+keeps `codflow.in` free for a marketing site and avoids apex CNAME limits.
+
+### 4. Config, once the host answers
+
+Four URLs in `shopify.app.toml`, all on the same host:
+
+```toml
+application_url = "https://app.codflow.in"
+
+[auth]
+redirect_urls = [
+  "https://app.codflow.in/api/auth/callback",
+  "https://app.codflow.in/api/auth/shopify/callback"
+]
+
+[app_proxy]
+url = "https://app.codflow.in/api/proxy"
+
+[build]
+automatically_update_urls_on_dev = false
+```
+
+That last flag stops `shopify app dev` overwriting production URLs with a
+tunnel. With it false, local development needs a stable tunnel or the URLs put
+back by hand.
+
+Environment on **both** the web and worker services:
+
+```
+APP_URL=https://app.codflow.in
+GOOGLE_REDIRECT_URI=https://app.codflow.in/api/google/callback
+PLAN_EXEMPT_SHOPS=dealzy-9cthr0cs.myshopify.com,codkar-th9dk7h6.myshopify.com
+SUPPORT_TELEGRAM_URL=https://t.me/codflowapp
+```
+
+`PLAN_EXEMPT_SHOPS` must be on the worker too — it enforces limits
+independently, and a worker without it applies Free-tier ceilings to background
+pushes. `SUPPORT_TELEGRAM_URL` is inlined into the admin bundle at *build* time,
+so it has to be present when the image is built, not only when it runs.
+
+`APP_URL` must equal `application_url` exactly. A trailing slash fails the
+install with an error naming neither.
+
+### 5. Managed pricing plans
+
+Four, named **exactly** `Free`, `Starter`, `Pro`, `Enterprise` — that display
+name is the only signal Shopify returns about which plan was bought, and
+`resolvePlan` maps it back onto the enum.
+
+| Plan | Price | Trial |
+|---|---|---|
+| Free | $0 | none |
+| Starter | $9 | 3 days |
+| Pro | $18 | 3 days |
+| Enterprise | $26 | none |
+
+These must match `PLAN_CATALOGUE` in `packages/shared/src/contracts/billing.ts`.
+Nothing in the code can read the dashboard's figures back, so a mismatch shows a
+merchant one price and bills another.
+
+### 6. Migrate and deploy
+
+```bash
+npm run release        # prisma migrate deploy, against the hosted database
+npm run build:extension && shopify app deploy
+```
+
+Build the extension before deploying: the bundles in `assets/` are committed and
+`deploy` uploads whatever is sitting there, not what the TypeScript says.
+
+### 7. Install
+
+Partner Dashboard -> Distribution -> **Public distribution**, then use the
+install link on `dealzy-9cthr0cs.myshopify.com`. Then Online Store -> Themes ->
+Customize -> App embeds -> enable CodFlow.
+
+### 8. Prove it before pointing customers at it
+
+Place **one real COD order** and watch it reach Shopify. The draft-order
+mutations have only ever run against the development store, and this is the
+highest-risk path in the codebase. On failure `cod_orders.pushError` holds
+Shopify's own message and `POST /api/admin/orders/:reference/retry-push` re-runs
+it after a fix.
+
+Two other things have never run in production: the nightly retention sweep,
+which clears personal fields on orders older than a year, and the order-bump
+tick boxes, which have never been seen rendering on a storefront.

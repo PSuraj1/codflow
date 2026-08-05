@@ -96,10 +96,18 @@ export function SaveBar({
         delegation reaches them even though the admin paints their counterparts
         outside the frame. App Bridge fills in the labels.
       */}
+      {/*
+        `loading=""` rather than `loading="true"`. React knows `loading` as an
+        enumerated attribute — `lazy` or `eager`, for images and iframes — and
+        rejects anything else with "Unexpected value for attribute loading on
+        <button>", which the admin logged on every dirty form. App Bridge reads
+        it as a bare boolean attribute, so the empty string is both valid HTML
+        and what it expects.
+      */}
       <button
         variant="primary"
         onClick={onSave}
-        {...(loading ? { loading: 'true' } : {})}
+        {...(loading ? { loading: '' } : {})}
         {...(disabled ? { disabled: true } : {})}
       />
       <button onClick={onDiscard} />
