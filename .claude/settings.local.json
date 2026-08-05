@@ -173,7 +173,19 @@
       "Bash(docker run *)",
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(grep -E \"^\\\\.env$|^\\\\.env\\\\.[^e]\")"
+      "Bash(grep -E \"^\\\\.env$|^\\\\.env\\\\.[^e]\")",
+      "Bash(git grep *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(timeout 300 git push -u origin main)",
+      "Bash(gh --version)",
+      "Bash(gh auth *)",
+      "Bash(timeout 120 git ls-remote --heads origin)",
+      "Bash(timeout 180 git fetch origin)",
+      "Bash(git -c user.name=\"ssura\" -c user.email=\"srk@identiwitty.com\" merge origin/main --allow-unrelated-histories --no-commit)",
+      "Bash(git checkout *)",
+      "Bash(git -c user.name=ssura -c user.email=srk@identiwitty.com commit -q -m ' *)",
+      "Bash(git rev-list *)"
     ]
   }
 }

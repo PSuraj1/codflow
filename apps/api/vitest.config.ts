@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 /**
@@ -16,6 +17,27 @@ import { defineConfig } from 'vitest/config';
  * the HTTP surface with the dependency failure as the expected outcome.
  */
 export default defineConfig({
+  /**
+   * `@codflow/shared` resolves to its **source**, not its build output.
+   *
+   * The package's `exports` point at `dist/`, which is gitignored — so on a
+   * fresh checkout every test importing it failed with "Cannot find module"
+   * until something had run the shared build first. That made `npm run test`
+   * silently dependent on a leftover artifact, and it passed locally for
+   * exactly that reason while failing in CI.
+   *
+   * Aliasing to source also means tests exercise the code as written rather
+   * than a compiled copy of it. `apps/admin` has resolved it this way from the
+   * start; this brings the two into line.
+   */
+  resolve: {
+    alias: {
+      '@codflow/shared': fileURLToPath(
+        new URL('../../packages/shared/src/index.ts', import.meta.url),
+      ),
+    },
+  },
+
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts', 'tests/**/*.test.ts'],

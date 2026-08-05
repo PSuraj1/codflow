@@ -23,7 +23,7 @@
     "start": "npm run start --workspace @codflow/api",
     "release": "prisma migrate deploy --schema apps/api/prisma/schema.prisma",
     "preflight": "npm run preflight --workspace @codflow/api",
-    "typecheck": "npm run typecheck --workspaces --if-present && npm run typecheck:extension",
+    "typecheck": "npm run build --workspace @codflow/shared && npm run typecheck --workspaces --if-present && npm run typecheck:extension",
     "typecheck:extension": "tsc -p theme-src/tsconfig.json",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
