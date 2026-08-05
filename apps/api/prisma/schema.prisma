@@ -1,0 +1,1574 @@
+// CodFlow — Prisma schema
+// Provider: PostgreSQL. ORM: Prisma 6.19.3.
+//
+// IMPORTANT — Prisma 6, not 7, is deliberate:
+// @shopify/shopify-app-session-storage-prisma@9.0.1 peer-depends on prisma ^6.19.0
+// and imports `PrismaClient`/`Prisma` from "@prisma/client". Prisma 7's `prisma-client`
+// generator emits into a local `output` directory instead of populating @prisma/client,
+// so the official session storage package cannot resolve against it. Owning OAuth
+// session persistence by hand is not a tradeoff worth making. Revisit when Shopify
+// ships a Prisma 7 compatible release of that package.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum Plan {
+  FREE
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  FROZEN
+  CANCELLED
+  EXPIRED
+  PENDING
+}
+
+/// Lifecycle of a COD order as CodFlow sees it. Distinct from Shopify's
+/// financial/fulfillment status because a CodFlow order exists before a
+/// Shopify order does (form submitted -> OTP pending -> pushed to Shopify).
+enum CodOrderStatus {
+  DRAFT
+  PENDING_OTP
+  CONFIRMED
+  PUSHED_TO_SHOPIFY
+  FAILED
+  CANCELLED
+  ABANDONED
+  FULFILLED
+  RETURNED
+  REFUNDED
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum RiskAction {
+  ALLOW
+  REVIEW
+  CHALLENGE_OTP
+  BLOCK
+}
+
+/// Field types available in the drag-and-drop form builder.
+enum FormFieldType {
+  TEXT
+  TEXTAREA
+  EMAIL
+  PHONE
+  NUMBER
+  SELECT
+  MULTISELECT
+  RADIO
+  CHECKBOX
+  COUNTRY
+  STATE
+  CITY
+  POSTAL_CODE
+  DATE
+  HIDDEN
+  HEADING
+  PARAGRAPH
+  DIVIDER
+  QUANTITY
+  VARIANT_PICKER
+  CONSENT
+}
+
+enum ButtonPlacement {
+  PRODUCT_PAGE
+  CART_PAGE
+  STICKY_MOBILE
+  FLOATING
+  POPUP
+  COLLECTION_PAGE
+  HOME_PAGE
+}
+
+enum PixelProvider {
+  META
+  TIKTOK
+  GOOGLE_ADS
+  SNAPCHAT
+  PINTEREST
+  CUSTOM
+}
+
+enum PixelEventName {
+  PAGE_VIEW
+  VIEW_CONTENT
+  ADD_TO_CART
+  INITIATE_CHECKOUT
+  ADD_PAYMENT_INFO
+  PURCHASE
+  LEAD
+  COMPLETE_REGISTRATION
+  SEARCH
+  CUSTOM
+}
+
+enum PixelDispatchStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED_CONSENT
+  DEDUPLICATED
+  /// Deliberately not sent — the provider has no equivalent for this event, or
+  /// the merchant narrowed which events this pixel reports. Distinct from
+  /// FAILED so a merchant's failure count reflects actual problems rather than
+  /// events the app correctly declined to send.
+  SKIPPED
+}
+
+enum SyncStatus {
+  PENDING
+  IN_PROGRESS
+  SUCCESS
+  FAILED
+  SKIPPED
+  RETRYING
+}
+
+enum SyncTrigger {
+  WEBHOOK
+  MANUAL
+  BULK
+  RETRY
+  SCHEDULED
+  REALTIME
+}
+
+enum OtpProvider {
+  FIREBASE
+  MSG91
+  TWILIO
+  WHATSAPP
+  SMTP_EMAIL
+}
+
+enum OtpStatus {
+  PENDING
+  VERIFIED
+  EXPIRED
+  FAILED
+  CANCELLED
+}
+
+enum BlockListType {
+  BLACKLIST
+  WHITELIST
+}
+
+enum BlockListScope {
+  PHONE
+  EMAIL
+  IP
+  ADDRESS
+  POSTAL_CODE
+  COUNTRY
+  CUSTOMER_ID
+  DEVICE_FINGERPRINT
+}
+
+enum AutomationTrigger {
+  COD_ORDER_CREATED
+  COD_ORDER_CONFIRMED
+  ORDER_PUSHED
+  ORDER_CANCELLED
+  ORDER_FULFILLED
+  ORDER_RETURNED
+  HIGH_RISK_DETECTED
+  OTP_VERIFIED
+  OTP_FAILED
+  SYNC_FAILED
+  ABANDONED_COD
+}
+
+enum AutomationActionType {
+  ADD_ORDER_TAG
+  REMOVE_ORDER_TAG
+  ARCHIVE_ORDER
+  CANCEL_ORDER
+  SEND_EMAIL
+  SEND_WHATSAPP
+  SYNC_TO_SHEET
+  FIRE_PIXEL_EVENT
+  RUN_FRAUD_SCAN
+  ADD_TO_BLACKLIST
+  ADD_CUSTOMER_TAG
+  WEBHOOK_POST
+}
+
+enum NotificationChannel {
+  EMAIL
+  WHATSAPP
+  SMS
+  WEBHOOK
+}
+
+enum Locale {
+  EN
+  HI
+  AR
+  FR
+  ES
+  DE
+}
+
+enum ThemeMode {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+// ============================================================================
+// SHOPIFY SESSION — shape dictated by @shopify/shopify-app-session-storage-prisma@9
+// Model MUST be named `Session`; field names and types are fixed by that package.
+// Do not rename or add required fields here.
+// ============================================================================
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean?
+  locale        String?
+  collaborator  Boolean?
+  emailVerified Boolean?
+
+  // Added in session-storage-prisma v8 for token refresh support.
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+
+  @@index([shop])
+  @@index([expires])
+  @@map("shopify_sessions")
+}
+
+// ============================================================================
+// SHOP — tenant root. Almost every other model hangs off this.
+// ============================================================================
+
+model Shop {
+  id       String @id @default(cuid())
+  /// myshopify.com domain. The canonical tenant key.
+  domain   String @unique
+  /// Shopify's numeric shop GID suffix, captured on install.
+  shopifyGid String? @unique
+
+  name            String?
+  email           String?
+  ownerName       String?
+  phone           String?
+  countryCode     String?
+  currencyCode    String  @default("USD")
+  primaryLocale   String  @default("en")
+  timezone        String  @default("UTC")
+  ianaTimezone    String?
+  planDisplayName String?
+  shopifyPlan     String?
+
+  // Install lifecycle
+  installedAt   DateTime  @default(now())
+  uninstalledAt DateTime?
+  isActive      Boolean   @default(true)
+  /// Scopes actually granted at last install/scope-update. Compared against the
+  /// TOML scopes to detect when a re-consent prompt is required.
+  grantedScopes String?
+
+  // Onboarding
+  onboardingCompletedAt DateTime?
+  onboardingStep        Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  settings        ShopSettings?
+  subscription    Subscription?
+  formConfigs     FormConfig[]
+  buttonConfigs   ButtonConfig[]
+  orderBumps      OrderBump[]
+  codOrders       CodOrder[]
+  googleAccount   GoogleAccount?
+  sheetConfigs    SheetConfig[]
+  sheetSyncLogs   SheetSyncLog[]
+  pixels          Pixel[]
+  pixelEvents     PixelEvent[]
+  fraudSettings   FraudSettings?
+  fraudRules      FraudRule[]
+  riskAssessments RiskAssessment[]
+  blockListEntries BlockListEntry[]
+  otpSettings     OtpSettings?
+  otpVerifications OtpVerification[]
+  automations     Automation[]
+  automationRuns  AutomationRun[]
+  notificationTemplates NotificationTemplate[]
+  auditLogs       AuditLog[]
+  dailyStats      DailyStat[]
+  usageRecords    UsageRecord[]
+  webhookEvents   WebhookEvent[]
+
+  @@index([isActive])
+  @@index([installedAt])
+  @@map("shops")
+}
+
+// ============================================================================
+// SETTINGS — one row per shop, holds branding/localization/general toggles.
+// Feature-specific settings live in their own models (FraudSettings, OtpSettings).
+// ============================================================================
+
+model ShopSettings {
+  id     String @id @default(cuid())
+  shopId String @unique
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  // --- General
+  codEnabled            Boolean @default(true)
+  /// Hide native Add To Cart / Buy Now and drive all conversion through COD.
+  replaceAddToCart      Boolean @default(false)
+  replaceBuyNow         Boolean @default(true)
+  enabledOnAllProducts  Boolean @default(true)
+  /// Shopify product GIDs. Applied when enabledOnAllProducts is false.
+  includedProductGids   String[] @default([])
+  excludedProductGids   String[] @default([])
+  includedCollectionGids String[] @default([])
+
+  // --- COD economics
+  codFeeEnabled     Boolean  @default(false)
+  codFeeAmount      Decimal? @db.Decimal(12, 2)
+  codFeeIsPercent   Boolean  @default(false)
+  minOrderValue     Decimal? @db.Decimal(12, 2)
+  maxOrderValue     Decimal? @db.Decimal(12, 2)
+  freeShippingAbove Decimal? @db.Decimal(12, 2)
+  shippingFee       Decimal? @db.Decimal(12, 2)
+
+  // --- Order handling
+  /// Tags applied to every COD order pushed to Shopify.
+  defaultOrderTags   String[] @default(["COD", "CodFlow"])
+  /// Create as draft order first, then complete. Safer for fraud review flows.
+  createAsDraftOrder Boolean  @default(false)
+  autoFulfill        Boolean  @default(false)
+  markAsPaid         Boolean  @default(false)
+  inventoryBehaviour String   @default("decrement_obeying_policy")
+  sendShopifyOrderConfirmation Boolean @default(true)
+
+  // --- Branding
+  brandPrimaryColor   String  @default("#008060")
+  brandSecondaryColor String  @default("#004C3F")
+  brandTextColor      String  @default("#202223")
+  brandFontFamily     String  @default("inherit")
+  brandBorderRadius   Int     @default(8)
+  brandLogoUrl        String?
+  /// Rendered height of the logo in the form dialog, in pixels.
+  ///
+  /// A height rather than a width: merchants upload logos of wildly different
+  /// aspect ratios, and constraining the height is what makes a row of them
+  /// look consistent. The width follows from `object-fit: contain`, bounded by
+  /// the dialog so a wide banner cannot push the close button off it.
+  brandLogoHeight     Int     @default(40)
+  /// `left` | `center` | `right`. Validated in `shop/dto.ts`, not by an enum,
+  /// matching how `inventoryBehaviour` and `FormConfig.layout` are stored.
+  brandLogoAlignment  String  @default("left")
+  customCss           String?
+  themeMode           ThemeMode @default(SYSTEM)
+
+  // --- Localization
+  defaultLocale     Locale   @default(EN)
+  enabledLocales    Locale[] @default([EN])
+  /// Force RTL layout regardless of locale detection.
+  forceRtl          Boolean  @default(false)
+  currencyFormat    String   @default("{{amount}} {{currency}}")
+  dateFormat        String   @default("YYYY-MM-DD")
+
+  // --- Geography
+  allowedCountryCodes    String[] @default([])
+  blockedCountryCodes    String[] @default([])
+  allowedPostalPatterns  String[] @default([])
+  blockedPostalPatterns  String[] @default([])
+
+  // --- Data retention
+  /// Days a shopper's personal fields survive on an order before the retention
+  /// sweep clears them.
+  ///
+  /// Shopify's protected customer data rules require a retention limit, so this
+  /// has no "keep forever" value — the range is bounded in `dto.ts` rather than
+  /// left open. What the sweep clears is the *personal* columns only; amounts,
+  /// timestamps and product ids stay, so a merchant's revenue history does not
+  /// change underneath them. See `jobs/enforceRetention.ts`.
+  orderRetentionDays     Int     @default(365)
+
+  // --- Notifications
+  notifyEmail            String?
+  notifyOnNewOrder       Boolean @default(true)
+  notifyOnHighRisk       Boolean @default(true)
+  notifyOnSyncFailure    Boolean @default(true)
+  customerEmailEnabled   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("shop_settings")
+}
+
+// ============================================================================
+// FORM BUILDER
+// ============================================================================
+
+model FormConfig {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  name        String  @default("Default COD Form")
+  /// Only one form per shop may be active at a time; enforced in the service layer.
+  isActive    Boolean @default(true)
+  isDefault   Boolean @default(false)
+
+  // --- Copy (localizable via NotificationTemplate-style JSON keyed by locale)
+  headingText     String  @default("Cash On Delivery")
+  subheadingText  String?
+  submitButtonText String @default("Place Order")
+  successMessage  String  @default("Thank you! Your order has been placed.")
+  /// { "hi": { "headingText": "..." }, "ar": { ... } }
+  translations    Json    @default("{}")
+
+  // --- Layout
+  layout          String  @default("single_column")
+  showOrderSummary Boolean @default(true)
+  showProductImage Boolean @default(true)
+  showQuantitySelector Boolean @default(true)
+  showVariantSelector  Boolean @default(true)
+  showCouponField  Boolean @default(false)
+  showTermsCheckbox Boolean @default(false)
+  termsUrl         String?
+
+  // --- Behaviour
+  requireOtp       Boolean @default(false)
+  /// Persist partially-filled forms so they surface as abandoned COD in analytics.
+  trackAbandonment Boolean @default(true)
+  abandonmentDelaySeconds Int @default(30)
+  /// Honeypot + timing checks against bots.
+  botProtection    Boolean @default(true)
+  minFillSeconds   Int     @default(3)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  fields FormField[]
+
+  @@unique([shopId, name])
+  @@index([shopId, isActive])
+  @@map("form_configs")
+}
+
+model FormField {
+  id           String     @id @default(cuid())
+  formConfigId String
+  formConfig   FormConfig @relation(fields: [formConfigId], references: [id], onDelete: Cascade)
+
+  /// Stable machine key used as the payload property and the Sheets column key.
+  key       String
+  type      FormFieldType
+  label     String
+  placeholder String?
+  helpText  String?
+  /// Ordering for the drag-and-drop builder. Gaps are fine; sort ascending.
+  position  Int
+
+  isRequired  Boolean @default(false)
+  isEnabled   Boolean @default(true)
+  /// Merchant may not delete core fields (phone, name) — only reorder/relabel.
+  isSystem    Boolean @default(false)
+  defaultValue String?
+  /// Rendered but not shown; used for attribution values (utm, ref).
+  isHidden    Boolean @default(false)
+
+  // --- Validation
+  minLength   Int?
+  maxLength   Int?
+  minValue    Decimal? @db.Decimal(12, 2)
+  maxValue    Decimal? @db.Decimal(12, 2)
+  /// JS-compatible regex source, validated server-side before persisting.
+  regexPattern String?
+  validationMessage String?
+  /// For SELECT/RADIO/MULTISELECT: [{ "label": "...", "value": "..." }]
+  options     Json     @default("[]")
+
+  // --- Conditional visibility
+  /// Show this field only when the referenced field matches.
+  /// { "field": "country", "operator": "equals", "value": "IN" }
+  conditionalOn Json?
+
+  // --- Presentation
+  columnWidth Int    @default(12)
+  cssClass    String?
+  translations Json  @default("{}")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([formConfigId, key])
+  @@index([formConfigId, position])
+  @@map("form_fields")
+}
+
+// ============================================================================
+// BUTTON CONFIG — theme extension reads this to render the COD button.
+// ============================================================================
+
+model ButtonConfig {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  placement ButtonPlacement
+  isEnabled Boolean @default(true)
+
+  label       String  @default("Order Now — Cash On Delivery")
+  subLabel    String?
+  iconName    String?
+  translations Json   @default("{}")
+
+  bgColor     String  @default("#008060")
+  textColor   String  @default("#FFFFFF")
+  borderColor String  @default("#008060")
+  borderRadius Int    @default(8)
+  fontSize    Int     @default(16)
+  fontWeight  String  @default("600")
+  paddingY    Int     @default(14)
+  paddingX    Int     @default(24)
+  fullWidth   Boolean @default(true)
+  customCss   String?
+
+  // Placement-specific knobs
+  stickyOffsetBottom Int     @default(0)
+  floatingPosition   String  @default("bottom_right")
+  showOnMobile       Boolean @default(true)
+  showOnDesktop      Boolean @default(true)
+  /// Pixels scrolled before a sticky/floating button appears.
+  showAfterScrollPx  Int     @default(0)
+  openInPopup        Boolean @default(true)
+  animation          String  @default("none")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, placement])
+  @@index([shopId, isEnabled])
+  @@map("button_configs")
+}
+
+// ============================================================================
+// COD ORDER — the core transactional record.
+// ============================================================================
+
+model CodOrder {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  /// Human-facing reference shown to the customer before a Shopify order exists.
+  reference String @unique
+
+  status CodOrderStatus @default(DRAFT)
+
+  // --- Shopify linkage (null until pushed)
+  shopifyOrderGid    String?  @unique
+  shopifyOrderNumber String?
+  /// Shopify's own order-status page. Carries a token that cannot be derived
+  /// from the order id, so it is captured at completion or lost.
+  orderStatusUrl     String?
+  shopifyDraftOrderGid String? @unique
+  shopifyCustomerGid String?
+  pushedAt           DateTime?
+  pushAttempts       Int      @default(0)
+  pushError          String?
+
+  // --- Customer
+  firstName String?
+  lastName  String?
+  email     String?
+  phone     String
+  /// E.164 normalization of `phone`, used for dedupe and blacklist matching.
+  phoneE164 String?
+
+  // --- Address
+  address1   String?
+  address2   String?
+  city       String?
+  province   String?
+  provinceCode String?
+  country    String?
+  countryCode String?
+  postalCode String?
+  /// Normalized lowercase address digest for duplicate-address fraud checks.
+  addressHash String?
+
+  orderNotes String?
+
+  /// Tick-box add-ons the shopper accepted, priced at submission.
+  /// [{ id, title, price }] — a snapshot, so a merchant editing or deleting a
+  /// bump later does not rewrite what an existing order charged.
+  selectedBumps Json    @default("[]")
+  bumpTotal     Decimal @db.Decimal(12, 2) @default(0)
+
+  // --- Cart
+  /// [{ variantGid, productGid, title, variantTitle, sku, quantity, price, image }]
+  lineItems Json
+  currency  String  @default("USD")
+  subtotal  Decimal @db.Decimal(12, 2) @default(0)
+  shippingFee Decimal @db.Decimal(12, 2) @default(0)
+  codFee    Decimal @db.Decimal(12, 2) @default(0)
+  discount  Decimal @db.Decimal(12, 2) @default(0)
+  taxAmount Decimal @db.Decimal(12, 2) @default(0)
+  total     Decimal @db.Decimal(12, 2) @default(0)
+  discountCode String?
+
+  /// Values captured from custom/hidden form fields, keyed by FormField.key.
+  customFields Json @default("{}")
+
+  // --- Attribution & device
+  ipAddress   String?
+  userAgent   String?
+  referrer    String?
+  landingPage String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmTerm     String?
+  utmContent  String?
+  deviceFingerprint String?
+  /// Web pixel / analytics correlation ids for deduplicated server-side events.
+  clientId    String?
+  fbp         String?
+  fbc         String?
+  ttclid      String?
+  gclid       String?
+
+  // --- Consent (drives whether server-side pixel events may fire)
+  marketingConsent  Boolean @default(false)
+  analyticsConsent  Boolean @default(false)
+  saleOfDataConsent Boolean @default(false)
+
+  /// The shopper refused automated risk scoring on this submission.
+  ///
+  /// The engine still scores — the merchant needs the signal to decide — but it
+  /// may not *refuse* on its own: a BLOCK is downgraded to REVIEW so a person
+  /// makes the call. GDPR Article 22 is about the decision being automated, not
+  /// about the analysis.
+  profilingOptOut Boolean @default(false)
+
+  // --- Risk (denormalized from the latest RiskAssessment for fast filtering)
+  riskScore Int        @default(0)
+  riskLevel RiskLevel  @default(LOW)
+  riskAction RiskAction @default(ALLOW)
+
+  // --- OTP
+  otpRequired Boolean   @default(false)
+  otpVerified Boolean   @default(false)
+  otpVerifiedAt DateTime?
+
+  // --- Sync
+  sheetSyncStatus SyncStatus @default(PENDING)
+  sheetSyncedAt   DateTime?
+
+  // --- Merchant workflow
+  isArchived   Boolean @default(false)
+  internalNote String?
+  tags         String[] @default([])
+
+  /// When the personal columns were cleared, by retention or by a redaction
+  /// request. Doubles as the sweep's "already done" marker, which is what keeps
+  /// it from re-examining every historic order every night.
+  redactedAt DateTime?
+
+  cancelledAt DateTime?
+  cancelReason String?
+  fulfilledAt DateTime?
+  returnedAt  DateTime?
+  refundedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  riskAssessments RiskAssessment[]
+  otpVerifications OtpVerification[]
+  sheetSyncLogs   SheetSyncLog[]
+  pixelEvents     PixelEvent[]
+  timeline        CodOrderEvent[]
+  automationRuns  AutomationRun[]
+
+  @@index([shopId, status])
+  @@index([shopId, createdAt])
+  @@index([shopId, riskLevel])
+  @@index([shopId, sheetSyncStatus])
+  @@index([shopId, phoneE164])
+  @@index([shopId, isArchived])
+  /// The retention sweep's access path: one shop, oldest first, not yet cleared.
+  @@index([shopId, redactedAt, createdAt])
+  @@index([phoneE164])
+  @@index([email])
+  @@index([ipAddress])
+  @@index([addressHash])
+  @@map("cod_orders")
+}
+
+/// Append-only timeline shown in the order detail drawer.
+model CodOrderEvent {
+  id         String   @id @default(cuid())
+  codOrderId String
+  codOrder   CodOrder @relation(fields: [codOrderId], references: [id], onDelete: Cascade)
+
+  /// e.g. "order.created", "otp.verified", "sheet.sync.failed"
+  type    String
+  message String
+  /// Arbitrary structured detail for rendering rich timeline entries.
+  data    Json     @default("{}")
+  /// "system" | "merchant" | "customer" | "shopify"
+  actor   String   @default("system")
+  actorId String?
+
+  createdAt DateTime @default(now())
+
+  @@index([codOrderId, createdAt])
+  @@map("cod_order_events")
+}
+
+// ============================================================================
+// UPSELLS
+// ============================================================================
+
+/// A tick-box add-on offered on the COD form — the "1-tick upsell" or order
+/// bump: shipping protection, priority processing, gift wrapping.
+///
+/// Deliberately a flat-priced add-on rather than a Shopify product. A product
+/// would need inventory, variants and a catalogue entry for something the
+/// merchant is really selling as a service, and it would put the price behind a
+/// Shopify lookup on the storefront's critical path. The amount lives here and
+/// is re-resolved server-side at submission, exactly like the COD fee.
+model OrderBump {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  /// Added to the order total once, whatever the cart contains.
+  price       Decimal @db.Decimal(12, 2)
+
+  isEnabled   Boolean @default(true)
+  /// Order the bumps appear in on the form. Lowest first.
+  position    Int     @default(0)
+  /// Ticked when the form first renders. A merchant may pre-select an add-on,
+  /// and the shopper can always untick it — but see the admin copy: pre-ticking
+  /// a paid extra is a dark pattern in several jurisdictions.
+  defaultChecked Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shopId, isEnabled, position])
+  @@map("order_bumps")
+}
+
+// ============================================================================
+// GOOGLE SHEETS
+// ============================================================================
+
+model GoogleAccount {
+  id     String @id @default(cuid())
+  shopId String @unique
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  googleUserId String
+  email        String
+  displayName  String?
+  avatarUrl    String?
+
+  /// AES-256-GCM encrypted at the repository layer. Never returned to the client.
+  accessTokenEnc  String
+  refreshTokenEnc String
+  tokenExpiresAt  DateTime
+  scopes          String[] @default([])
+
+  isActive     Boolean   @default(true)
+  lastRefreshedAt DateTime?
+  /// Set when Google returns invalid_grant so the UI can prompt a reconnect.
+  revokedAt    DateTime?
+  lastError    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sheetConfigs SheetConfig[]
+
+  @@index([shopId, isActive])
+  @@map("google_accounts")
+}
+
+model SheetConfig {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  googleAccountId String
+  googleAccount   GoogleAccount @relation(fields: [googleAccountId], references: [id], onDelete: Cascade)
+
+  spreadsheetId  String
+  spreadsheetName String?
+  spreadsheetUrl String?
+  /// Worksheet tab name. Created automatically when missing.
+  worksheetName  String  @default("CodFlow Orders")
+  worksheetGid   Int?
+
+  isActive       Boolean @default(true)
+  autoSync       Boolean @default(true)
+  /// Write the header row before the first data row.
+  includeHeaders Boolean @default(true)
+  /// Append vs upsert-by-reference. Upsert keeps one row per order across updates.
+  writeMode      String  @default("append")
+
+  /// Combine every line item of an order into one row.
+  ///
+  /// False writes one row per line item, repeating the customer's details on
+  /// each. Merchants who pivot or filter by product want that; merchants who
+  /// read the sheet as an order list do not, because a three-item order looks
+  /// like three orders. Defaults to true — the reading most merchants expect.
+  singleRowPerOrder Boolean @default(true)
+
+  /// Insert new orders directly beneath the header instead of appending.
+  ///
+  /// Puts the newest order where the merchant is already looking. Costs more
+  /// than appending: a prepend has to shift every existing row down, which is a
+  /// separate Sheets API call and cannot use the cheap append endpoint.
+  insertAtTop Boolean @default(false)
+
+  /// 1-based row holding the headers. Data starts on the row after it.
+  headerRow Int @default(1)
+
+  /// Ordered column mapping:
+  /// [{ "column": "A", "header": "Order Ref", "source": "reference" },
+  ///  { "column": "B", "header": "Phone", "source": "phone" },
+  ///  { "column": "C", "header": "Landmark", "source": "customFields.landmark" }]
+  columnMapping Json @default("[]")
+
+  lastSyncedAt   DateTime?
+  lastSyncStatus SyncStatus?
+  lastError      String?
+  /// Next spreadsheet row to write when writeMode is "append".
+  nextRow        Int      @default(2)
+  totalSynced    Int      @default(0)
+  totalFailed    Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  syncLogs SheetSyncLog[]
+
+  @@unique([shopId, spreadsheetId, worksheetName])
+  @@index([shopId, isActive])
+  @@map("sheet_configs")
+}
+
+model SheetSyncLog {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  sheetConfigId String?
+  sheetConfig   SheetConfig? @relation(fields: [sheetConfigId], references: [id], onDelete: SetNull)
+
+  codOrderId String?
+  codOrder   CodOrder? @relation(fields: [codOrderId], references: [id], onDelete: SetNull)
+
+  status  SyncStatus
+  trigger SyncTrigger
+
+  rowNumber   Int?
+  /// The exact values written, for audit and replay.
+  payload     Json?
+  errorMessage String?
+  errorCode   String?
+  attempt     Int     @default(1)
+  durationMs  Int?
+  /// BullMQ job id, so a failed sync can be traced to its queue entry.
+  jobId       String?
+
+  createdAt DateTime @default(now())
+
+  @@index([shopId, status])
+  @@index([shopId, createdAt])
+  @@index([sheetConfigId, status])
+  @@index([codOrderId])
+  @@map("sheet_sync_logs")
+}
+
+// ============================================================================
+// PIXELS
+// ============================================================================
+
+model Pixel {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  provider PixelProvider
+  label    String
+  /// Pixel/dataset/tag id as the provider expects it.
+  pixelId  String
+  isEnabled Boolean @default(true)
+
+  // --- Server-side (Conversions API / Events API)
+  serverSideEnabled Boolean @default(false)
+  /// AES-256-GCM encrypted access token for CAPI/Events API.
+  accessTokenEnc    String?
+  /// Meta test event code, for the event tester screen.
+  testEventCode     String?
+  /// Google Ads conversion label / TikTok event source id, provider dependent.
+  conversionLabel   String?
+  /// Google Ads: AW-XXXXX conversion action resource name.
+  conversionId      String?
+  gtmContainerId    String?
+
+  clientSideEnabled Boolean @default(true)
+  /// Send hashed email/phone/name with events for better match rates.
+  advancedMatching  Boolean @default(true)
+  /// Emit a shared event_id client+server so the provider deduplicates.
+  deduplication     Boolean @default(true)
+
+  /// Which events this pixel fires. Empty = all supported events.
+  enabledEvents PixelEventName[] @default([])
+  /// Provider-specific overrides and custom event name remaps.
+  eventMapping  Json             @default("{}")
+  /// Arbitrary JS for CUSTOM provider, executed in the web pixel sandbox.
+  customScript  String?
+
+  /// Respect Shopify customer privacy consent before firing.
+  requireConsent Boolean @default(true)
+
+  lastEventAt   DateTime?
+  totalSent     Int      @default(0)
+  totalFailed   Int      @default(0)
+  lastError     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events PixelEvent[]
+
+  @@unique([shopId, provider, pixelId])
+  @@index([shopId, isEnabled])
+  @@map("pixels")
+}
+
+model PixelEvent {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  pixelId String?
+  pixel   Pixel?  @relation(fields: [pixelId], references: [id], onDelete: SetNull)
+
+  codOrderId String?
+  codOrder   CodOrder? @relation(fields: [codOrderId], references: [id], onDelete: SetNull)
+
+  eventName   PixelEventName
+  customEventName String?
+  /// Shared id across client and server transmissions for deduplication.
+  eventId     String
+  status      PixelDispatchStatus @default(PENDING)
+  /// "client" | "server"
+  source      String
+
+  payload      Json?
+  responseCode Int?
+  responseBody String?
+  errorMessage String?
+  attempt      Int     @default(1)
+
+  value    Decimal? @db.Decimal(12, 2)
+  currency String?
+
+  createdAt DateTime @default(now())
+
+  @@index([shopId, eventName, createdAt])
+  @@index([shopId, status])
+  @@index([eventId])
+  @@index([pixelId, createdAt])
+  @@index([codOrderId])
+  @@map("pixel_events")
+}
+
+// ============================================================================
+// FRAUD ENGINE
+// ============================================================================
+
+model FraudSettings {
+  id     String @id @default(cuid())
+  shopId String @unique
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  isEnabled Boolean @default(true)
+
+  // --- Score thresholds. Score is 0-100, additive from rule weights.
+  mediumThreshold   Int @default(30)
+  highThreshold     Int @default(60)
+  criticalThreshold Int @default(85)
+
+  // --- Action per level
+  actionOnMedium   RiskAction @default(REVIEW)
+  actionOnHigh     RiskAction @default(CHALLENGE_OTP)
+  actionOnCritical RiskAction @default(BLOCK)
+
+  // --- Individual detectors
+  checkDuplicatePhone   Boolean @default(true)
+  checkDuplicateEmail   Boolean @default(true)
+  checkDuplicateAddress Boolean @default(true)
+  checkDisposableEmail  Boolean @default(true)
+  checkFakePhone        Boolean @default(true)
+  checkVpn              Boolean @default(false)
+  checkProxy            Boolean @default(false)
+  checkTor              Boolean @default(true)
+  checkVelocity         Boolean @default(true)
+  checkCountryRisk      Boolean @default(false)
+  checkIpReputation     Boolean @default(false)
+  checkBlockList        Boolean @default(true)
+
+  // --- Limits
+  maxOrdersPerDayPerPhone Int @default(3)
+  maxOrdersPerDayPerIp    Int @default(5)
+  maxOrdersPerDayPerEmail Int @default(3)
+  maxOpenCodOrders        Int @default(3)
+  /// Window for velocity checks.
+  velocityWindowMinutes   Int @default(60)
+  velocityMaxOrders       Int @default(3)
+  /// Orders within this window from the same phone+product are treated as duplicates.
+  duplicateWindowHours    Int @default(24)
+
+  /// Country codes considered high risk when checkCountryRisk is on.
+  highRiskCountryCodes String[] @default([])
+
+  // --- Third-party IP intelligence (optional; encrypted)
+  ipIntelProvider   String?
+  ipIntelApiKeyEnc  String?
+
+  /// Auto-blacklist a phone after this many cancelled/returned COD orders. 0 = off.
+  /// Combined quantity across every line. 0 disables the check — a limit of
+  /// zero would refuse every order, so it cannot double as "no limit".
+  maxItemsPerOrder Int @default(0)
+
+  /// Counts orders per device as well as per phone and IP. Off by default: a
+  /// shared family tablet is a normal way to place two orders.
+  checkDeviceVelocity      Boolean @default(false)
+  maxOrdersPerDayPerDevice Int     @default(3)
+
+  /// Shown to a shopper whose order is refused. Null shows the generic wording.
+  /// Never append the reason to this — see `orders/service.ts`.
+  blockedMessage String?
+
+  autoBlacklistAfterFailures Int @default(0)
+  /// Tag high-risk orders in Shopify instead of blocking.
+  tagHighRiskOrders Boolean @default(true)
+  highRiskTag       String  @default("CodFlow-High-Risk")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("fraud_settings")
+}
+
+/// Merchant-authored rules layered on top of the built-in detectors.
+model FraudRule {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  name      String
+  isEnabled Boolean @default(true)
+  /// Lower runs first. Ties broken by createdAt.
+  priority  Int     @default(100)
+
+  /// { "all": [{ "field": "total", "operator": "gt", "value": 5000 },
+  ///            { "field": "countryCode", "operator": "in", "value": ["XX"] }] }
+  conditions Json
+  /// Points added to the risk score when conditions match.
+  scoreDelta Int        @default(0)
+  /// Overrides the threshold-derived action when set.
+  action     RiskAction?
+  /// Shown to the merchant in the risk breakdown.
+  reason     String?
+
+  matchCount   Int       @default(0)
+  lastMatchedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, name])
+  @@index([shopId, isEnabled, priority])
+  @@map("fraud_rules")
+}
+
+model RiskAssessment {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  codOrderId String
+  codOrder   CodOrder @relation(fields: [codOrderId], references: [id], onDelete: Cascade)
+
+  score  Int
+  level  RiskLevel
+  action RiskAction
+
+  /// Per-signal breakdown rendered in the admin:
+  /// [{ "code": "DUPLICATE_PHONE", "label": "...", "weight": 25, "matched": true,
+  ///    "detail": { "count": 4 } }]
+  signals Json
+
+  /// Ids of merchant FraudRules that matched.
+  matchedRuleIds String[] @default([])
+
+  // Enrichment snapshot, kept for audit even if the provider later changes.
+  ipCountryCode String?
+  ipIsVpn       Boolean?
+  ipIsProxy     Boolean?
+  ipIsTor       Boolean?
+  ipIsHosting   Boolean?
+  ipReputationScore Int?
+  emailIsDisposable Boolean?
+  phoneIsValid  Boolean?
+  phoneCarrier  String?
+  phoneLineType String?
+
+  /// Merchant override of the automated decision.
+  reviewedAt     DateTime?
+  reviewedBy     String?
+  reviewDecision RiskAction?
+  reviewNote     String?
+
+  engineVersion String @default("1.0.0")
+  durationMs    Int?
+
+  createdAt DateTime @default(now())
+
+  @@index([shopId, level])
+  @@index([shopId, createdAt])
+  @@index([codOrderId, createdAt])
+  @@map("risk_assessments")
+}
+
+model BlockListEntry {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  type  BlockListType
+  scope BlockListScope
+  /// Normalized value: E.164 for PHONE, lowercase for EMAIL, CIDR allowed for IP.
+  value String
+
+  reason    String?
+  /// "merchant" | "system" | "import"
+  createdBy String  @default("merchant")
+  /// Null = permanent.
+  expiresAt DateTime?
+  isActive  Boolean @default(true)
+
+  hitCount   Int       @default(0)
+  lastHitAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, type, scope, value])
+  @@index([shopId, scope, isActive])
+  @@index([value])
+  @@map("block_list_entries")
+}
+
+// ============================================================================
+// OTP
+// ============================================================================
+
+model OtpSettings {
+  id     String @id @default(cuid())
+  shopId String @unique
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  isEnabled Boolean     @default(false)
+  provider  OtpProvider @default(MSG91)
+  /// Fall back to this provider when the primary send fails.
+  fallbackProvider OtpProvider?
+
+  /// Always require OTP, vs only when the fraud engine returns CHALLENGE_OTP.
+  alwaysRequire Boolean @default(false)
+
+  codeLength   Int @default(6)
+  /// "numeric" | "alphanumeric"
+  codeType     String @default("numeric")
+  expirySeconds Int @default(300)
+  maxAttempts  Int @default(5)
+  resendCooldownSeconds Int @default(30)
+  maxResends   Int @default(3)
+
+  messageTemplate String @default("Your {{shop}} verification code is {{code}}. Valid for {{minutes}} minutes.")
+  senderId        String?
+  translations    Json   @default("{}")
+
+  // --- Provider credentials, AES-256-GCM encrypted.
+  msg91AuthKeyEnc   String?
+  msg91TemplateId   String?
+  twilioAccountSid  String?
+  twilioAuthTokenEnc String?
+  twilioFromNumber  String?
+  twilioServiceSid  String?
+  firebaseProjectId String?
+  firebaseServiceAccountEnc String?
+  whatsappPhoneNumberId String?
+  whatsappTokenEnc  String?
+  whatsappTemplateName String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("otp_settings")
+}
+
+model OtpVerification {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  codOrderId String?
+  codOrder   CodOrder? @relation(fields: [codOrderId], references: [id], onDelete: SetNull)
+
+  /// Destination. E.164 phone, or email when provider is SMTP_EMAIL.
+  destination String
+  channel     OtpProvider
+  /// Argon2id/HMAC digest of the code. The plaintext code is never stored.
+  codeHash    String
+  status      OtpStatus   @default(PENDING)
+
+  attempts   Int @default(0)
+  maxAttempts Int @default(5)
+  resendCount Int @default(0)
+
+  expiresAt  DateTime
+  verifiedAt DateTime?
+
+  ipAddress String?
+  userAgent String?
+
+  providerMessageId String?
+  providerResponse  Json?
+  errorMessage      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shopId, status])
+  @@index([destination, createdAt])
+  @@index([codOrderId])
+  @@index([expiresAt])
+  @@map("otp_verifications")
+}
+
+// ============================================================================
+// AUTOMATIONS
+// ============================================================================
+
+model Automation {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  name      String
+  isEnabled Boolean @default(true)
+  trigger   AutomationTrigger
+  priority  Int     @default(100)
+
+  /// Optional guard evaluated before actions run. Same shape as FraudRule.conditions.
+  conditions Json?
+  /// Ordered: [{ "type": "ADD_ORDER_TAG", "config": { "tags": ["COD"] } }]
+  actions    Json
+  /// Delay execution; enqueued with this BullMQ delay.
+  delaySeconds Int @default(0)
+
+  runCount    Int       @default(0)
+  lastRunAt   DateTime?
+  failCount   Int       @default(0)
+  lastError   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  runs AutomationRun[]
+
+  @@unique([shopId, name])
+  @@index([shopId, trigger, isEnabled])
+  @@map("automations")
+}
+
+model AutomationRun {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  automationId String
+  automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  codOrderId String?
+  codOrder   CodOrder? @relation(fields: [codOrderId], references: [id], onDelete: SetNull)
+
+  status  SyncStatus
+  trigger AutomationTrigger
+  /// Per-action outcome: [{ "type": "...", "ok": true, "detail": {...} }]
+  results Json    @default("[]")
+  errorMessage String?
+  durationMs Int?
+  jobId      String?
+
+  createdAt DateTime @default(now())
+
+  @@index([shopId, createdAt])
+  @@index([automationId, status])
+  @@index([codOrderId])
+  @@map("automation_runs")
+}
+
+model NotificationTemplate {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  /// e.g. "cod_order_confirmation", "high_risk_alert"
+  key     String
+  channel NotificationChannel
+  isEnabled Boolean @default(true)
+
+  subject  String?
+  body     String
+  /// { "hi": { "subject": "...", "body": "..." } }
+  translations Json @default("{}")
+  fromName String?
+  fromEmail String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, key, channel])
+  @@map("notification_templates")
+}
+
+// ============================================================================
+// BILLING — Shopify App Pricing (managed). Plan state is read from the Partner
+// API and cached here. The legacy Billing API charge_id redirect and the
+// APP_SUBSCRIPTIONS_UPDATE webhook were retired on 2026-04-28 and are not used.
+// ============================================================================
+
+model Subscription {
+  id     String @id @default(cuid())
+  shopId String @unique
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  plan   Plan               @default(FREE)
+  status SubscriptionStatus @default(ACTIVE)
+  /// `plan_handle` returned by the managed pricing redirect.
+  planHandle String?
+  /// Partner API AppSubscription GID.
+  shopifySubscriptionGid String? @unique
+
+  price        Decimal? @db.Decimal(10, 2)
+  currencyCode String   @default("USD")
+  interval     String   @default("EVERY_30_DAYS")
+
+  trialDays     Int       @default(0)
+  trialEndsAt   DateTime?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+
+  isTest      Boolean   @default(false)
+  activatedAt DateTime?
+  cancelledAt DateTime?
+
+  /// Last successful Partner API reconciliation, so a stale cache is detectable.
+  lastVerifiedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([plan, status])
+  @@map("subscriptions")
+}
+
+/// Monthly usage counters enforced against plan limits.
+model UsageRecord {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  /// First day of the billing month, UTC. Makes the unique key stable.
+  periodStart DateTime
+  /// "cod_orders" | "sheet_syncs" | "otp_sends" | "pixel_events"
+  metric      String
+  quantity    Int      @default(0)
+  /// Plan limit at the time of writing, for historical accuracy.
+  limitAtTime Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, periodStart, metric])
+  @@index([shopId, metric])
+  @@map("usage_records")
+}
+
+// ============================================================================
+// ANALYTICS — pre-aggregated per shop per day. Keeps dashboard queries O(days)
+// instead of scanning cod_orders.
+// ============================================================================
+
+model DailyStat {
+  id     String @id @default(cuid())
+  shopId String
+  shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  /// Midnight in the shop's timezone, stored as UTC.
+  date DateTime @db.Date
+
+  formViews       Int @default(0)
+  formStarts      Int @default(0)
+  formSubmissions Int @default(0)
+  buttonClicks    Int @default(0)
+
+  codOrders       Int @default(0)
+  confirmedOrders Int @default(0)
+  pushedOrders    Int @default(0)
+  cancelledOrders Int @default(0)
+  returnedOrders  Int @default(0)
+  fulfilledOrders Int @default(0)
+  abandonedOrders Int @default(0)
+
+  revenue         Decimal @db.Decimal(14, 2) @default(0)
+  cancelledValue  Decimal @db.Decimal(14, 2) @default(0)
+  returnedValue   Decimal @db.Decimal(14, 2) @default(0)
+  averageOrderValue Decimal @db.Decimal(12, 2) @default(0)
+  currency        String  @default("USD")
+
+  blockedAttempts Int @default(0)
+  highRiskOrders  Int @default(0)
+  otpSent         Int @default(0)
+  otpVerified     Int @default(0)
+  otpFailed       Int @default(0)
+
+  sheetSyncSuccess Int @default(0)
+  sheetSyncFailed  Int @default(0)
+  pixelEventsSent  Int @default(0)
+  pixelEventsFailed Int @default(0)
+
+  /// { "IN": 42, "AE": 7 }
+  ordersByCountry Json @default("{}")
+  ordersByCity    Json @default("{}")
+  /// { "<productGid>": { "title": "...", "orders": 12, "revenue": 3400 } }
+  ordersByProduct Json @default("{}")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shopId, date])
+  @@index([shopId, date])
+  @@map("daily_stats")
+}
+
+// ============================================================================
+// PLATFORM — webhook idempotency and audit trail.
+// ============================================================================
+
+/// Records every received Shopify webhook so replays are idempotent.
+/// `shopifyWebhookId` is unique; a duplicate insert means Shopify retried.
+model WebhookEvent {
+  id     String @id @default(cuid())
+  shopId String?
+  shop   Shop?  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  shopifyWebhookId String  @unique
+  topic            String
+  shopDomain       String
+  apiVersion       String?
+  triggeredAt      DateTime?
+
+  payload Json
+
+  processedAt  DateTime?
+  status       SyncStatus @default(PENDING)
+  attempt      Int        @default(0)
+  errorMessage String?
+  jobId        String?
+
+  createdAt DateTime @default(now())
+
+  @@index([shopDomain, topic])
+  @@index([status, createdAt])
+  @@index([shopId, topic])
+  @@map("webhook_events")
+}
+
+model AuditLog {
+  id     String @id @default(cuid())
+  shopId String?
+  shop   Shop?  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  /// "settings.updated", "blacklist.created", "google.disconnected"
+  action String
+  /// Model name the action targeted.
+  entity   String?
+  entityId String?
+
+  /// "merchant" | "system" | "shopify" | "cron"
+  actor      String  @default("merchant")
+  actorId    String?
+  actorEmail String?
+
+  /// Redacted before write — never persist tokens or full PII here.
+  before Json?
+  after  Json?
+
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([shopId, createdAt])
+  @@index([shopId, action])
+  @@index([entity, entityId])
+  @@map("audit_logs")
+}

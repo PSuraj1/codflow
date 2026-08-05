@@ -1,0 +1,59 @@
+﻿# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+apps/admin/dist/
+apps/api/dist/
+packages/shared/dist/
+
+# Environment — never commit real secrets
+.env
+.env.*
+!.env.example
+
+# Shopify CLI
+.shopify/
+shopify.app.*.toml
+!shopify.app.toml
+
+# Prisma
+apps/api/prisma/*.db
+apps/api/prisma/*.db-journal
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Caches
+.cache/
+.turbo/
+.eslintcache
+.vite/

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodFlow</title>
+
+    <!--
+      App Bridge must be the FIRST script in <head>, loaded straight from
+      Shopify's CDN and never bundled, self-hosted or deferred. Shopify
+      auto-updates this file; a bundled copy goes stale and embedded features
+      (session tokens, navigation, resource picker) silently break.
+
+      `data-api-key` is the app's client_id. It is public by design — it appears
+      in the URL of every embedded app — so injecting it at build time is safe.
+
+      The placeholder deliberately avoids Vite's `%VAR%` syntax: Vite only
+      exposes `VITE_`-prefixed variables to the client, and any unresolved
+      `%VAR%` in HTML produces a build warning on every single build. This token
+      is substituted by the `codflow-html-env` plugin in vite.config.ts instead,
+      which reads the unprefixed SHOPIFY_API_KEY the Shopify CLI already sets.
+    -->
+    <script
+      src="https://cdn.shopify.com/shopifycloud/app-bridge.js"
+      data-api-key="__SHOPIFY_API_KEY__"
+    ></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

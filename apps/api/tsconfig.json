@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"],
+  // `src/tests/**` as well as `*.test.ts`: the HTTP harness under
+  // `src/tests/helpers/` is not itself a test file, so the filename pattern
+  // alone would compile it into `dist` and ship test scaffolding — including a
+  // hardcoded API secret — inside the production image.
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "src/tests/**", "vitest.config.ts"]
+}

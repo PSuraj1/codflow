@@ -1,0 +1,16 @@
+-- Adds a SKIPPED outcome for pixel dispatch.
+--
+-- Previously an event the app correctly declined to send — because the provider
+-- has no equivalent for it, or because the merchant narrowed which events that
+-- pixel reports — had to be recorded as FAILED. That inflated the merchant's
+-- failure count with things that were working as configured, and made a real
+-- integration problem harder to spot.
+--
+-- `ADD VALUE` on an existing enum is additive and non-locking in PostgreSQL 12+,
+-- so no existing row changes and no backfill is needed.
+--
+-- Hand-written for the same reason as the sheet-layout migration:
+-- `prisma migrate diff --from-migrations` requires a shadow database, which is
+-- not available in this environment. Verified by src/tests/migrations.test.ts,
+-- which applies every migration to a real PostgreSQL instance.
+ALTER TYPE "PixelDispatchStatus" ADD VALUE IF NOT EXISTS 'SKIPPED';

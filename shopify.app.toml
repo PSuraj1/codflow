@@ -1,0 +1,119 @@
+# CodFlow — Shopify app configuration
+# Docs: https://shopify.dev/docs/apps/tools/cli/configuration
+#
+# `client_id` is populated by `shopify app config link`. Do not hand-edit it.
+# Scopes here are the source of truth: Shopify managed installation reads this
+# file and grants them at install time. Changing scopes requires `shopify app deploy`
+# and triggers a merchant re-consent prompt.
+
+name = "codflow"
+handle = "codflow-codkar"
+client_id = "359bf08a92b05ac7053cb08e645045d3"
+application_url = "https://stronger-ethnic-positioning-refers.trycloudflare.com"
+embedded = true
+
+[access_scopes]
+# read_customer_events + write_pixels     -> web pixel extension (Phase 6)
+# write_orders / read_orders              -> COD order creation + order management
+# read_products                           -> variant/price lookup for the COD form
+# read_customers / write_customers        -> customer matching, blacklist (Phase 7)
+# write_draft_orders                      -> COD orders staged as draft before capture
+# read_inventory                          -> stock validation before accepting COD
+# read_locales / read_markets             -> localization + country restriction
+# write_pixels                            -> webPixelCreate on install
+scopes = "read_products,read_inventory,read_orders,write_orders,write_draft_orders,read_customers,write_customers,read_customer_events,write_pixels,read_locales,read_markets,read_themes"
+
+# Managed installation. `use_legacy_install_flow = false` opts into Shopify
+# managed installation + token exchange, which is required for new embedded apps.
+# Do not set this to true — the authorization-code grant path is legacy-only.
+use_legacy_install_flow = false
+
+[auth]
+redirect_urls = [
+  "https://stronger-ethnic-positioning-refers.trycloudflare.com/api/auth/callback",
+  "https://stronger-ethnic-positioning-refers.trycloudflare.com/api/auth/shopify/callback"
+]
+
+# App proxy — how the theme app extension talks to the API.
+#
+# The storefront calls https://<shop-domain>/apps/codflow/... and Shopify
+# forwards it to the URL below. This is the right transport for storefront
+# traffic rather than calling the app's origin directly, for three reasons:
+#
+#   1. It is same-origin from the browser's point of view, so it works
+#      identically on myshopify.com and on any custom domain a merchant has
+#      mapped — no CORS, and no hardcoded app hostname inside a static asset
+#      (theme extension assets cannot render Liquid, so they cannot be told the
+#      app's URL at render time).
+#   2. Shopify signs every forwarded request, so the API can prove the call
+#      really came through a storefront rather than from a script somewhere.
+#   3. Requests inherit the storefront's own caching and locale routing.
+[app_proxy]
+url = "https://stronger-ethnic-positioning-refers.trycloudflare.com/api/proxy"
+subpath = "codflow"
+prefix = "apps"
+
+[webhooks]
+api_version = "2026-07"
+
+  # ---- Mandatory GDPR/compliance endpoints.
+  #
+  # These are NOT topic subscriptions, even though Shopify delivers them as
+  # webhooks with `customers/redact`-style topic headers. Declaring them under
+  # `[[webhooks.subscriptions]]` fails the deploy with "The following topic is
+  # invalid: customers/redact" — they have their own section, keyed by purpose
+  # rather than by topic, because every app must have all three and Shopify
+  # rejects app submission without them.
+  #
+  # The receiving handlers are unchanged: dispatch still routes on the topic
+  # header, so `modules/webhooks/service` sees `customers/redact` exactly as it
+  # did before.
+  [webhooks.privacy_compliance]
+  customer_data_request_url = "/api/webhooks/customers/data_request"
+  customer_deletion_url = "/api/webhooks/customers/redact"
+  shop_deletion_url = "/api/webhooks/shop/redact"
+
+  # ---- App lifecycle
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/api/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/api/webhooks/app/scopes_update"
+
+  # Billing. The only prompt path for a cancellation or a freeze — an upgrade
+  # announces itself because the merchant is waiting in the app, but nobody
+  # comes back to tell us they cancelled.
+  [[webhooks.subscriptions]]
+  topics = [ "app_subscriptions/update" ]
+  uri = "/api/webhooks/app_subscriptions/update"
+
+  # ---- Order lifecycle. Drives Google Sheets sync, pixel Purchase events,
+  # fraud rescoring, and automation rules.
+  [[webhooks.subscriptions]]
+  topics = [ "orders/create" ]
+  uri = "/api/webhooks/orders/create"
+  filter = "gateway:'Cash on Delivery (COD)'"
+
+  [[webhooks.subscriptions]]
+  topics = [ "orders/updated" ]
+  uri = "/api/webhooks/orders/updated"
+
+  [[webhooks.subscriptions]]
+  topics = [ "orders/cancelled" ]
+  uri = "/api/webhooks/orders/cancelled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "orders/fulfilled" ]
+  uri = "/api/webhooks/orders/fulfilled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "refunds/create" ]
+  uri = "/api/webhooks/refunds/create"
+
+[pos]
+embedded = false
+
+[build]
+automatically_update_urls_on_dev = true

@@ -1,0 +1,19 @@
+{
+  "codflow": {
+    "button": {
+      "open_form": "Zahlung bei Lieferung",
+      "sold_out": "Ausverkauft"
+    },
+    "form": {
+      "close": "Schließen",
+      "loading": "Bestellformular wird geladen…",
+      "unavailable": "Zahlung bei Lieferung ist für dieses Produkt nicht verfügbar.",
+      "error_title": "Etwas ist schiefgelaufen",
+      "error_body": "Das Bestellformular konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
+      "retry": "Erneut versuchen"
+    },
+    "block": {
+      "design_hint": "CodFlow-Button — aktivieren Sie „CodFlow — Cash on Delivery“ unter Theme-Einstellungen → App-Einbettungen, damit er in Ihrem Shop erscheint."
+    }
+  }
+}

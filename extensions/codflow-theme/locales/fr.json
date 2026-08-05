@@ -1,0 +1,19 @@
+{
+  "codflow": {
+    "button": {
+      "open_form": "Paiement à la livraison",
+      "sold_out": "Épuisé"
+    },
+    "form": {
+      "close": "Fermer",
+      "loading": "Chargement du formulaire de commande…",
+      "unavailable": "Le paiement à la livraison n'est pas disponible pour ce produit.",
+      "error_title": "Une erreur est survenue",
+      "error_body": "Nous n'avons pas pu charger le formulaire de commande. Veuillez réessayer.",
+      "retry": "Réessayer"
+    },
+    "block": {
+      "design_hint": "Bouton CodFlow — activez « CodFlow — Cash on Delivery » dans Paramètres du thème → Intégrations d'applications pour qu'il apparaisse sur votre boutique."
+    }
+  }
+}

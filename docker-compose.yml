@@ -1,0 +1,57 @@
+﻿# Local development dependencies for CodFlow.
+#
+# This file provisions Postgres and Redis only — the API and admin run on the
+# host via `shopify app dev`, which owns the HTTPS tunnel and injects the
+# Shopify environment variables. Running the app itself in Compose would sit
+# behind the tunnel and break OAuth redirects.
+#
+#   docker compose up -d
+#   npm run prisma:migrate
+
+name: codflow
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: codflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: codflow
+      POSTGRES_PASSWORD: codflow
+      POSTGRES_DB: codflow
+      # Deterministic collation so index ordering matches production.
+      POSTGRES_INITDB_ARGS: '--encoding=UTF8 --locale=C'
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U codflow -d codflow']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: codflow-redis
+    restart: unless-stopped
+    # BullMQ requires eviction to be disabled: losing a job key to an LRU evict
+    # silently drops work. `noeviction` makes Redis reject writes instead.
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory-policy noeviction
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres_data:
+  redis_data:

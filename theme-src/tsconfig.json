@@ -1,0 +1,18 @@
+{
+  // esbuild strips types without checking them, so without this file
+  // `src/form.ts` would compile happily with a type error in it and fail only
+  // in a shopper's browser. `npm run typecheck` covers it via this config.
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": [],
+    "paths": {
+      "@codflow/shared": ["../packages/shared/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
+}

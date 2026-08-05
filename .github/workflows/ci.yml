@@ -1,0 +1,134 @@
+# =============================================================================
+# CodFlow — continuous integration.
+#
+# Runs the same three commands a developer runs locally, in the same order, and
+# nothing else. That symmetry is the point: a CI pipeline that checks something
+# `npm run test` does not is a pipeline that fails on green machines, and one
+# that checks less is a pipeline nobody trusts.
+#
+# No database, no Redis, no Shopify credentials. The suite is pure logic,
+# resolves before any data-layer call, or runs against an embedded Postgres
+# (PGlite) — so there are no services to provision here and no secrets to leak
+# into a fork's pull request.
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A second push to the same branch cancels the first. Nobody reads the results
+# of a run against a commit that has already been superseded.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Typecheck, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Matches the Docker base image's major version, not the `engines`
+          # floor of 20.19. Testing on a different runtime from the one that
+          # ships is how a passing build fails in production; the floor exists
+          # so a developer on an older Node can still work on the repo.
+          node-version: '24'
+          cache: npm
+
+      # `--ignore-scripts` is not an option: Prisma's postinstall fetches the
+      # query engine, and @prisma/client is unusable without it.
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      # The API imports types from @prisma/client that do not exist until the
+      # client is generated, so this precedes the typecheck rather than the build.
+      - name: Generate Prisma client
+        run: npx prisma generate --schema apps/api/prisma/schema.prisma
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+      # The built theme extension assets are committed, because `shopify app
+      # deploy` uploads whatever is in `assets/` regardless of whether CI ran
+      # first. This catches the case where someone edits `src/` and forgets.
+      - name: Check the committed extension bundles are current
+        run: |
+          if ! git diff --quiet -- extensions/codflow-theme/assets; then
+            echo "::error::The built extension assets are out of date."
+            echo "Run 'npm run build:extension' and commit the result."
+            git diff --stat -- extensions/codflow-theme/assets
+            exit 1
+          fi
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Only after the source is known good — a broken build would fail here too,
+    # ten minutes later and with a far less readable error.
+    needs: verify
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Built but not pushed. What this proves is that the multi-stage build
+      # still works — the Prisma engine resolves against glibc, the workspace
+      # layout copies correctly, the production install has everything the
+      # compiled output imports. All of those break in ways `npm run build`
+      # cannot see.
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: codflow:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # A container that cannot start is the failure this catches — a missing
+      # runtime dependency, a bad CMD path, a Prisma engine that did not carry
+      # over from the build stage. It is expected to exit non-zero on the
+      # environment check; what matters is *which* error it reports.
+      - name: Container starts and validates its environment
+        run: |
+          output=$(docker run --rm \
+            -e NODE_ENV=production \
+            -e APP_URL=http://example.com \
+            -e SHOPIFY_API_KEY=ci \
+            -e SHOPIFY_API_SECRET=ci \
+            -e SHOPIFY_SCOPES=read_products \
+            -e DATABASE_URL=postgresql://localhost/ci \
+            -e REDIS_URL=redis://localhost:6379 \
+            -e ENCRYPTION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
+            -e SESSION_SECRET=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
+            codflow:ci 2>&1 || true)
+
+          echo "$output"
+
+          # The image is deliberately handed a production config full of
+          # development values. Refusing to start is the correct behaviour, and
+          # proves both that the process runs and that the guard is wired up.
+          if ! echo "$output" | grep -q "Unsafe production configuration"; then
+            echo "::error::The container did not reject an unsafe production configuration."
+            exit 1
+          fi

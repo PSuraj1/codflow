@@ -1,0 +1,19 @@
+{
+  "codflow": {
+    "button": {
+      "open_form": "Cash on Delivery",
+      "sold_out": "Sold out"
+    },
+    "form": {
+      "close": "Close",
+      "loading": "Loading the order form…",
+      "unavailable": "Cash on delivery is not available for this product.",
+      "error_title": "Something went wrong",
+      "error_body": "We could not load the order form. Please try again.",
+      "retry": "Try again"
+    },
+    "block": {
+      "design_hint": "CodFlow button — enable the “CodFlow — Cash on Delivery” app embed under Theme settings → App embeds for this to appear on your live store."
+    }
+  }
+}

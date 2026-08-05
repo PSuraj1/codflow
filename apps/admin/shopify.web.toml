@@ -1,0 +1,19 @@
+# The embedded admin, as a process the Shopify CLI runs.
+#
+# Holds the `frontend` role, so the CLI's tunnel points here and Vite proxies
+# `/api` through to the backend — see `server.proxy` in vite.config.ts. That
+# arrangement is what makes HMR work inside the Shopify admin iframe: the
+# merchant's browser talks to one origin, and the websocket rides the same
+# tunnel.
+#
+# It is deliberately *not* how production works. There the API serves the built
+# admin from `apps/admin/dist` on its own origin, with no proxy and no Vite. The
+# difference is confined to development, and `vite.config.ts` documents the two
+# settings that exist only for the tunnel: `allowedHosts` and the wss HMR port.
+
+roles = ["frontend"]
+
+[commands]
+# The CLI assigns FRONTEND_PORT and expects the process to listen on it; the
+# Vite config reads it rather than hardcoding 5173.
+dev = "npm run dev"

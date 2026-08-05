@@ -1,0 +1,19 @@
+{
+  "codflow": {
+    "button": {
+      "open_form": "Pago contra entrega",
+      "sold_out": "Agotado"
+    },
+    "form": {
+      "close": "Cerrar",
+      "loading": "Cargando el formulario de pedido…",
+      "unavailable": "El pago contra entrega no está disponible para este producto.",
+      "error_title": "Algo salió mal",
+      "error_body": "No pudimos cargar el formulario de pedido. Inténtalo de nuevo.",
+      "retry": "Intentar de nuevo"
+    },
+    "block": {
+      "design_hint": "Botón de CodFlow — activa «CodFlow — Cash on Delivery» en Configuración del tema → Integraciones de aplicaciones para que aparezca en tu tienda."
+    }
+  }
+}

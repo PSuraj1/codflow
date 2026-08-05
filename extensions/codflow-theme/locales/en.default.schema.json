@@ -1,0 +1,56 @@
+{
+  "codflow": {
+    "embed": {
+      "name": "CodFlow — Cash on Delivery",
+      "intro": "Turn this on to enable cash-on-delivery ordering across your store. Button text and colours are configured in the CodFlow app, not here — this section only controls how the button fits your theme.",
+      "sticky_mobile": {
+        "label": "Sticky button on mobile",
+        "info": "Keeps a cash-on-delivery button fixed to the bottom of the screen on phones."
+      },
+      "floating": {
+        "label": "Floating button",
+        "info": "Shows a button that follows the shopper as they scroll. Its corner and offset are set in the CodFlow app."
+      },
+      "advanced": {
+        "header": "Advanced"
+      },
+      "anchor": {
+        "label": "Button anchor (CSS selector)",
+        "info": "Leave empty unless CodFlow's buttons land in the wrong place on your theme. When set, buttons are inserted next to the first element matching this selector."
+      },
+      "hide_native": {
+        "label": "Buy button selector (CSS)",
+        "info": "Leave empty for most themes. Only set this if CodFlow fails to hide your theme's Add to cart button — an incorrect selector here can hide the wrong element."
+      }
+    },
+    "block": {
+      "name": "CodFlow — COD button",
+      "intro": "Places a cash-on-delivery button here. Its text and colours come from your CodFlow settings.",
+      "design_hint": "CodFlow button placeholder",
+      "placement": {
+        "label": "Placement",
+        "info": "Tells CodFlow which of your configured buttons to show here.",
+        "product": "Product page",
+        "cart": "Cart page",
+        "collection": "Collection page",
+        "home": "Home page"
+      },
+      "alignment": {
+        "label": "Alignment",
+        "stretch": "Full width",
+        "left": "Left",
+        "center": "Centre",
+        "right": "Right"
+      },
+      "spacing": {
+        "header": "Spacing"
+      },
+      "margin_top": "Space above",
+      "margin_bottom": "Space below",
+      "reserved_height": {
+        "label": "Reserved height",
+        "info": "Space held for the button while it loads. Set this close to your button's real height to avoid the page shifting."
+      }
+    }
+  }
+}

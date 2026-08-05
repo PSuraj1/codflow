@@ -1,0 +1,20 @@
+# The API, as a process the Shopify CLI runs.
+#
+# `shopify app dev` reads every shopify.web.toml under the app root, starts each
+# one, and creates a single tunnel pointing at whichever process holds the
+# `frontend` role. Without this file the CLI builds the theme extension and
+# nothing else — the API and admin never start, which looks like `npm run dev`
+# being broken.
+#
+# The CLI injects its own environment into this process: SHOPIFY_API_KEY,
+# SHOPIFY_API_SECRET, SCOPES, SHOPIFY_APP_URL and a PORT it has chosen. Two of
+# those names differ from the ones `config/env.ts` expects, and
+# `withShopifyCliEnv` maps them — see the note there for why the CLI's value
+# wins over `.env`.
+
+roles = ["backend"]
+
+[commands]
+# tsx watch. The CLI passes PORT; the server reads it through the same env
+# schema as every other value, so there is nothing to special-case here.
+dev = "npm run dev"

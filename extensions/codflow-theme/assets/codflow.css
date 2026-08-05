@@ -1,0 +1,762 @@
+/*
+ * CodFlow — storefront styles.
+ *
+ * This file runs inside a merchant's theme, which means it is the guest and the
+ * theme is the host. Two rules follow from that and explain most of what is
+ * below:
+ *
+ *  1. **Every class is namespaced `codflow-`.** No element, tag or attribute
+ *     selectors that could reach outside the app's own markup.
+ *  2. **Values come from custom properties, never hardcoded.** The merchant
+ *     configures colours in the CodFlow admin and the runtime publishes them as
+ *     `--codflow-*`. A literal colour here would silently override their brand.
+ *
+ * Fallbacks are supplied for every property so that a button styled before the
+ * config arrives — or after a failed request — is still legible rather than
+ * transparent-on-transparent.
+ */
+
+/* ---------------------------------------------------------------------------
+   Slots — the placeholders the app block renders
+   --------------------------------------------------------------------------- */
+
+.codflow-slot {
+  margin-top: var(--codflow-slot-margin-top, 12px);
+  margin-bottom: var(--codflow-slot-margin-bottom, 12px);
+  display: flex;
+  width: 100%;
+}
+
+.codflow-slot[data-codflow-align='left'] {
+  justify-content: flex-start;
+}
+.codflow-slot[data-codflow-align='center'] {
+  justify-content: center;
+}
+.codflow-slot[data-codflow-align='right'] {
+  justify-content: flex-end;
+}
+.codflow-slot[data-codflow-align='stretch'] .codflow-button {
+  width: 100%;
+}
+
+/*
+ * The slot the runtime creates for itself on a product page when the merchant
+ * has not placed the app block.
+ *
+ * It inherits the theme's own form width by being a plain block-level child of
+ * the product form, and stretches its button, because a COD button that renders
+ * at half the width of the Add to cart directly above it reads as broken
+ * styling rather than as a deliberate choice.
+ */
+.codflow-slot--auto {
+  display: block;
+  clear: both;
+}
+
+.codflow-slot--auto .codflow-button {
+  width: 100%;
+}
+
+/*
+ * Holds vertical space until the runtime paints the real button. Without it the
+ * page reflows the moment config arrives, which counts against Cumulative
+ * Layout Shift — a Core Web Vital that Shopify surfaces to merchants in their
+ * store speed report, where they will attribute any regression to this app.
+ */
+.codflow-slot__reserve {
+  min-height: var(--codflow-slot-min-height, 52px);
+  width: 100%;
+}
+
+/* Theme editor only. */
+.codflow-slot__hint {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px dashed rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(0, 0, 0, 0.6);
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------------------
+   Button
+   --------------------------------------------------------------------------- */
+
+.codflow-button {
+  /* `appearance: none` and the explicit font declaration stop the theme's own
+     button styling from bleeding in — many themes style `button` globally. */
+  appearance: none;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+
+  width: var(--codflow-width, 100%);
+  padding: var(--codflow-pad-y, 14px) var(--codflow-pad-x, 24px);
+
+  background-color: var(--codflow-bg, #008060);
+  color: var(--codflow-fg, #ffffff);
+  border: 1px solid var(--codflow-border, var(--codflow-bg, #008060));
+  border-radius: var(--codflow-radius, 8px);
+
+  font-family: var(--codflow-brand-font, inherit);
+  font-size: var(--codflow-font-size, 16px);
+  font-weight: var(--codflow-font-weight, 600);
+  line-height: 1.3;
+  text-align: center;
+  text-decoration: none;
+
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.codflow-button:hover {
+  /* `filter` rather than a second colour: it derives a hover state from
+     whatever the merchant chose, so every brand colour gets a sensible one. */
+  filter: brightness(0.93);
+}
+
+.codflow-button:active {
+  transform: translateY(1px);
+}
+
+.codflow-button:focus-visible {
+  /* Two-tone ring so the focus indicator stays visible against both a light
+     and a dark button colour. */
+  outline: 2px solid #ffffff;
+  outline-offset: -4px;
+  box-shadow: 0 0 0 2px var(--codflow-bg, #008060);
+}
+
+.codflow-button__label {
+  display: block;
+}
+
+.codflow-button__sublabel {
+  display: block;
+  font-size: 0.8em;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+/* ---------------------------------------------------------------------------
+   Injected placements — sticky mobile and floating
+   --------------------------------------------------------------------------- */
+
+.codflow-floating {
+  position: fixed;
+  /* Below Shopify's own overlays (cart drawers sit around 1000) but above
+     ordinary theme content. */
+  z-index: 998;
+  box-sizing: border-box;
+}
+
+.codflow-floating[hidden] {
+  display: none;
+}
+
+.codflow-floating--sticky-mobile {
+  left: 0;
+  right: 0;
+  /* `safe-area-inset-bottom` clears the home indicator on iPhones — without it
+     the button sits under the gesture bar and is hard to tap. */
+  bottom: calc(var(--codflow-offset-bottom, 0px) + env(safe-area-inset-bottom, 0px));
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.12);
+}
+
+.codflow-floating--floating {
+  width: auto;
+  bottom: calc(var(--codflow-offset-bottom, 20px) + env(safe-area-inset-bottom, 0px));
+}
+
+.codflow-floating--floating[data-position='bottom_right'] {
+  right: 20px;
+}
+.codflow-floating--floating[data-position='bottom_left'] {
+  left: 20px;
+}
+.codflow-floating--floating[data-position='middle_right'] {
+  right: 20px;
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+.codflow-floating--floating[data-position='middle_left'] {
+  left: 20px;
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+
+.codflow-floating--floating .codflow-button {
+  width: auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------------------------------------------------------------------------
+   Animations
+   --------------------------------------------------------------------------- */
+
+@keyframes codflow-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+@keyframes codflow-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+
+.codflow-button--anim-pulse {
+  animation: codflow-pulse 2s ease-in-out infinite;
+}
+
+.codflow-button--anim-shake {
+  animation: codflow-shake 0.6s ease-in-out 3;
+}
+
+/* ---------------------------------------------------------------------------
+   Dialog
+   --------------------------------------------------------------------------- */
+
+.codflow-overlay[hidden] {
+  display: none;
+}
+
+.codflow-overlay {
+  position: fixed;
+  inset: 0;
+  /* Above the sticky button and above most theme drawers. */
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.codflow-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.codflow-dialog {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  /* Momentum scrolling inside the dialog while the page behind it is locked. */
+  -webkit-overflow-scrolling: touch;
+
+  background: #ffffff;
+  color: var(--codflow-brand-text, #202223);
+  border-radius: var(--codflow-brand-radius, 12px);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.28);
+  padding: 24px;
+  box-sizing: border-box;
+  font-family: var(--codflow-brand-font, inherit);
+}
+
+.codflow-dialog:focus {
+  /* Focused programmatically when the dialog opens; the ring would be noise. */
+  outline: none;
+}
+
+.codflow-dialog__close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  appearance: none;
+  background: none;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  /* 44px is the minimum comfortable touch target. */
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
+  color: currentColor;
+  opacity: 0.6;
+}
+
+.codflow-dialog__close:hover,
+.codflow-dialog__close:focus-visible {
+  opacity: 1;
+}
+
+/*
+ * The merchant's logo, above the heading.
+ *
+ * `max-width` as well as `max-height`: a merchant uploads whatever they have,
+ * and a wide banner constrained only by height would push the close button off
+ * the dialog. `object-fit: contain` keeps it undistorted within both bounds,
+ * and the right margin clears the close button the same way the title does.
+ */
+.codflow-dialog__logo {
+  /* Block, so the auto margins the script sets can centre or right-align it. */
+  display: block;
+  height: var(--codflow-logo-height, 40px);
+  /* Clears the close button, so a wide logo cannot slide underneath it. */
+  max-width: calc(100% - 44px);
+  margin-bottom: 12px;
+  object-fit: contain;
+}
+
+.codflow-dialog__title {
+  margin: 0 44px 16px 0;
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.codflow-dialog__placeholder {
+  margin: 0;
+  opacity: 0.7;
+}
+
+/*
+ * Scroll lock. `position: fixed` on the body is the usual approach but loses
+ * the scroll position on close; `overflow: hidden` on both elements keeps it,
+ * and covers iOS Safari, which ignores the property on <body> alone.
+ */
+.codflow-scroll-locked,
+.codflow-scroll-locked body {
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------------------------
+   Form
+   --------------------------------------------------------------------------- */
+
+.codflow-form__subheading {
+  margin: 0 0 16px;
+  opacity: 0.75;
+  font-size: 14px;
+}
+
+/*
+ * Twelve-column grid. Each field publishes its own span as `--codflow-col`, so
+ * the merchant's per-field width from the builder is honoured without a class
+ * per permutation.
+ */
+.codflow-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+}
+
+.codflow-field {
+  grid-column: span var(--codflow-col, 12);
+  min-width: 0;
+}
+
+.codflow-field[hidden] {
+  display: none;
+}
+
+/*
+ * Below 480px every field goes full width regardless of its configured span.
+ * A six-column field on a narrow phone is an input roughly two words wide,
+ * which is unusable — and COD traffic is overwhelmingly mobile.
+ */
+@media (max-width: 480px) {
+  .codflow-field {
+    grid-column: span 12;
+  }
+}
+
+.codflow-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.codflow-required {
+  color: #d72c0d;
+  margin-inline-start: 2px;
+}
+
+.codflow-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 12px;
+  /*
+   * 16px specifically. iOS Safari zooms the viewport when a focused input has a
+   * font size below 16px, and the shopper is then left zoomed in on a form they
+   * have to pan around. This is the single most common mobile form defect.
+   */
+  font-size: 16px;
+  font-family: var(--codflow-brand-font, inherit);
+  line-height: 1.4;
+  color: var(--codflow-brand-text, #202223);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.28);
+  border-radius: var(--codflow-brand-radius, 8px);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.codflow-input:focus {
+  outline: none;
+  border-color: var(--codflow-brand-primary, #008060);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--codflow-brand-primary, #008060) 30%, transparent);
+}
+
+textarea.codflow-input {
+  resize: vertical;
+  min-height: 76px;
+}
+
+.codflow-field--invalid .codflow-input {
+  border-color: #d72c0d;
+}
+
+.codflow-help {
+  margin: 4px 0 0;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.codflow-error {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #d72c0d;
+}
+
+.codflow-error[hidden] {
+  display: none;
+}
+
+.codflow-checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.codflow-checkbox,
+.codflow-radio {
+  /* 18px keeps the hit area comfortable without overwhelming the label. */
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  flex: 0 0 auto;
+  accent-color: var(--codflow-brand-primary, #008060);
+}
+
+.codflow-checkbox-row .codflow-label {
+  margin: 0;
+  font-weight: 400;
+}
+
+.codflow-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.codflow-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.codflow-form__heading {
+  grid-column: span 12;
+  margin: 8px 0 0;
+  font-size: 16px;
+}
+
+.codflow-form__paragraph {
+  grid-column: span 12;
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.codflow-form__divider {
+  grid-column: span 12;
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  margin: 4px 0;
+}
+
+/*
+ * Honeypot. Positioned off-screen rather than `display: none` — a bot that
+ * skips hidden inputs still fills this, and a human never sees it. `aria-hidden`
+ * plus `tabindex=-1` on the input keep it out of the accessibility tree and the
+ * tab order, so it is invisible to assistive technology too.
+ */
+.codflow-hp {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.codflow-submit {
+  width: 100%;
+  margin-top: 18px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--codflow-brand-font, inherit);
+  color: #ffffff;
+  background: var(--codflow-brand-primary, #008060);
+  border: none;
+  border-radius: var(--codflow-brand-radius, 8px);
+  cursor: pointer;
+}
+
+.codflow-submit:hover:not(:disabled) {
+  filter: brightness(0.93);
+}
+
+.codflow-submit:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.codflow-form__error {
+  margin-top: 14px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #8e1f0b;
+  background: #fff4f4;
+  border: 1px solid #f0c2bc;
+  border-radius: var(--codflow-brand-radius, 8px);
+}
+
+.codflow-form__error[hidden] {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Order summary
+   --------------------------------------------------------------------------- */
+
+.codflow-summary {
+  margin-bottom: 18px;
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: var(--codflow-brand-radius, 8px);
+  font-size: 14px;
+}
+
+.codflow-summary__product {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.codflow-summary__image {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex: 0 0 auto;
+}
+
+.codflow-summary__title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.codflow-summary__qty {
+  margin: 2px 0 0;
+  opacity: 0.7;
+  font-size: 13px;
+}
+
+.codflow-summary__row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+}
+
+.codflow-summary__row--total {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* ---------------------------------------------------------------------------
+   Success
+   --------------------------------------------------------------------------- */
+
+.codflow-success {
+  text-align: center;
+  padding: 12px 0;
+}
+
+.codflow-success__message {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.codflow-success__reference {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
+/* ---------------------------------------------------------------------------
+   Native button replacement
+   --------------------------------------------------------------------------- */
+
+/*
+ * Applied by the runtime, and only ever after a CodFlow button has actually
+ * rendered. `visibility` rather than `display: none` so the theme's own layout
+ * calculations — several themes measure the buy button — do not break.
+ */
+.codflow-hidden-native {
+  visibility: hidden !important;
+  position: absolute !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Right-to-left
+   --------------------------------------------------------------------------- */
+
+[data-codflow-dir='rtl'] .codflow-dialog {
+  direction: rtl;
+  text-align: right;
+}
+
+[data-codflow-dir='rtl'] .codflow-dialog__close {
+  right: auto;
+  left: 12px;
+}
+
+[data-codflow-dir='rtl'] .codflow-dialog__title {
+  margin: 0 0 16px 44px;
+}
+
+/* ---------------------------------------------------------------------------
+   Order bumps — the tick-box add-ons between the summary and the fields
+   --------------------------------------------------------------------------- */
+
+.codflow-bumps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+/*
+ * The whole row is the label, so the tap target is the card rather than the
+ * 16px checkbox — most COD orders are placed on a phone.
+ */
+.codflow-bump {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: var(--codflow-brand-radius, 8px);
+  cursor: pointer;
+}
+
+.codflow-bump:hover {
+  border-color: var(--codflow-brand-primary, #008060);
+}
+
+.codflow-bump__input {
+  margin: 2px 0 0;
+  accent-color: var(--codflow-brand-primary, #008060);
+  flex: none;
+}
+
+.codflow-bump__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+}
+
+.codflow-bump__title {
+  font-weight: 600;
+}
+
+.codflow-bump__description {
+  font-size: 0.9em;
+  opacity: 0.75;
+}
+
+.codflow-bump__price {
+  flex: none;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+   Accessibility preferences
+   --------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .codflow-button,
+  .codflow-button--anim-pulse,
+  .codflow-button--anim-shake {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .codflow-button {
+    border-width: 2px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Postal lookup status — the line under the PIN code field
+   --------------------------------------------------------------------------- */
+
+/*
+ * Colour is never the only signal here. The resolved area reads as
+ * "Mumbai, Maharashtra" and a rejection reads as a sentence, so the message
+ * itself carries the meaning for anyone who cannot distinguish the two tones —
+ * which matters more than usual on a field a shopper is actively typing into.
+ */
+.codflow-postal-status--ok {
+  color: #0c7a3d;
+}
+
+.codflow-postal-status--error {
+  color: #b42318;
+}

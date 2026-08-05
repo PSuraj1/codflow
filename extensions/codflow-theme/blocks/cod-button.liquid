@@ -1,0 +1,143 @@
+{% comment %}
+  CodFlow — COD button app block.
+
+  The merchant drags this into a product, cart or collection template in the
+  theme editor. Unlike the sticky and floating buttons — which the runtime has
+  to inject, because no theme has a slot for them — this one is placed exactly
+  where the merchant wants it, so its position needs no DOM guessing and no
+  fragile selector matching.
+
+  The block renders a *placeholder*, not the finished button. Appearance comes
+  from the merchant's CodFlow admin settings, which arrive with the config
+  fetch, so painting a button here with hardcoded styling would produce a
+  visible restyle a moment later. Instead the placeholder reserves the right
+  amount of vertical space and the runtime fills it in, which keeps Cumulative
+  Layout Shift at zero either way.
+
+  The settings below are all *theme-level*: spacing and alignment depend on the
+  surrounding section, not on CodFlow. Labels and colours are deliberately
+  absent — they live in the CodFlow admin, which is the single source of truth
+  for how the button looks across every placement.
+{% endcomment %}
+
+{%- liquid
+  assign cod_placement = block.settings.placement
+
+  assign cod_product_id = ''
+  assign cod_variant_id = ''
+  if product != blank
+    assign cod_product_id = product.id
+    if product.selected_or_first_available_variant != blank
+      assign cod_variant_id = product.selected_or_first_available_variant.id
+    endif
+  endif
+-%}
+
+<div
+  class="codflow-slot codflow-slot--{{ cod_placement | downcase }}"
+  data-codflow-slot
+  data-codflow-placement="{{ cod_placement }}"
+  data-codflow-product-id="{{ cod_product_id }}"
+  data-codflow-variant-id="{{ cod_variant_id }}"
+  data-codflow-align="{{ block.settings.alignment }}"
+  style="
+    --codflow-slot-margin-top: {{ block.settings.margin_top }}px;
+    --codflow-slot-margin-bottom: {{ block.settings.margin_bottom }}px;
+    --codflow-slot-min-height: {{ block.settings.reserved_height }}px;
+  "
+  {{ block.shopify_attributes }}
+>
+  {%- comment -%}
+    Reserves layout space until the runtime paints. `aria-hidden` because there
+    is nothing here for a screen reader yet — announcing an empty region would
+    be noise, and the real button carries its own accessible name.
+  {%- endcomment -%}
+  <div class="codflow-slot__reserve" aria-hidden="true"></div>
+
+  {%- comment -%}
+    Theme editor only. A merchant who has placed the block but not yet enabled
+    the app embed would otherwise see nothing at all and conclude the app is
+    broken — this is the one case where an explanatory message is worth more
+    than an invisible element.
+  {%- endcomment -%}
+  {%- if request.design_mode -%}
+    <div class="codflow-slot__hint" data-codflow-design-hint>
+      {{ 'codflow.block.design_hint' | t }}
+    </div>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "t:codflow.block.name",
+  "target": "section",
+  "stylesheet": "codflow.css",
+  "javascript": "codflow.js",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:codflow.block.intro"
+    },
+    {
+      "type": "select",
+      "id": "placement",
+      "label": "t:codflow.block.placement.label",
+      "info": "t:codflow.block.placement.info",
+      "options": [
+        { "value": "PRODUCT_PAGE", "label": "t:codflow.block.placement.product" },
+        { "value": "CART_PAGE", "label": "t:codflow.block.placement.cart" },
+        { "value": "COLLECTION_PAGE", "label": "t:codflow.block.placement.collection" },
+        { "value": "HOME_PAGE", "label": "t:codflow.block.placement.home" }
+      ],
+      "default": "PRODUCT_PAGE"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:codflow.block.alignment.label",
+      "options": [
+        { "value": "stretch", "label": "t:codflow.block.alignment.stretch" },
+        { "value": "left", "label": "t:codflow.block.alignment.left" },
+        { "value": "center", "label": "t:codflow.block.alignment.center" },
+        { "value": "right", "label": "t:codflow.block.alignment.right" }
+      ],
+      "default": "stretch"
+    },
+    {
+      "type": "header",
+      "content": "t:codflow.block.spacing.header"
+    },
+    {
+      "type": "range",
+      "id": "margin_top",
+      "label": "t:codflow.block.margin_top",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "label": "t:codflow.block.margin_bottom",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "reserved_height",
+      "label": "t:codflow.block.reserved_height.label",
+      "info": "t:codflow.block.reserved_height.info",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 52
+    }
+  ]
+}
+{% endschema %}

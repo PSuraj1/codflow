@@ -1,0 +1,29 @@
+# CodFlow — theme app extension
+#
+# Delivers the storefront half of the app: the COD button, and the container the
+# COD form renders into. Theme app extensions are the only supported way to add
+# storefront UI to Online Store 2.0 themes — script tags are deprecated, and
+# editing theme files directly is grounds for app rejection.
+#
+# Structure and its constraints:
+#
+#   blocks/    app blocks (merchant-placed) and app embed blocks (global).
+#              An app embed block is identified by `target: body` or `head` in
+#              its schema; an app block by `target: section`.
+#   snippets/  shared Liquid, included from blocks.
+#   assets/    static JS and CSS. Liquid is NOT rendered in this directory, so
+#              nothing here can read shop or product data — configuration is
+#              passed in via data attributes written by the blocks.
+#   locales/   `*.default.json` for storefront strings, `*.default.schema.json`
+#              for theme-editor labels. These are separate namespaces.
+#
+# Shopify caps each directory (10 assets, 25 blocks, 50 snippets, 20 locales)
+# and rejects the whole extension on deploy if any limit is exceeded.
+
+api_version = "2026-07"
+
+[[extensions]]
+type = "theme"
+name = "CodFlow — Cash on Delivery"
+handle = "codflow-theme"
+uid = "65700e1b-adb2-4770-3a7e-0774db8cda7c073aea68"

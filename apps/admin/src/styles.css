@@ -1,0 +1,85 @@
+/*
+ * Global styles.
+ *
+ * Deliberately minimal — Polaris owns the visual language, and overriding it is
+ * how an embedded app starts looking foreign inside the Shopify admin. What is
+ * here addresses two things Polaris does not: the iframe's own layout, and
+ * right-to-left support for the Arabic locale.
+ */
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  /*
+   * The admin iframe has no background of its own. Without this the app shows
+   * white in the merchant's dark-mode admin, which reads as a rendering bug.
+   */
+  background: var(--p-color-bg, #f1f1f1);
+}
+
+/*
+ * RTL. Polaris responds to `dir` on a container, but the document-level
+ * attribute has to be set for form controls and scrollbars to follow. The
+ * attribute itself is applied by the locale provider in a later phase.
+ */
+[dir='rtl'] {
+  text-align: right;
+}
+
+/*
+ * COD button preview.
+ *
+ * Copies of `codflow-pulse` and `codflow-shake` from the theme extension's
+ * stylesheet. Duplicated rather than shared because the extension's CSS is
+ * served to storefronts and never loaded here — and a preview that showed a
+ * still button while the storefront pulsed would be the one part of this screen
+ * a merchant could not check any other way. Keep the two in step.
+ */
+@keyframes codflow-preview-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+@keyframes codflow-preview-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+
+.codflow-preview-anim-pulse {
+  animation: codflow-preview-pulse 2s ease-in-out infinite;
+}
+
+.codflow-preview-anim-shake {
+  animation: codflow-preview-shake 0.6s ease-in-out 3;
+}
+
+/* Respect the merchant's motion preference — Shopify's accessibility guidelines
+   require it, and app review checks for it. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

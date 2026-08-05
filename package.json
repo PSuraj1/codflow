@@ -1,0 +1,51 @@
+{
+  "name": "codflow",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CodFlow \u2014 Cash On Delivery app for Shopify",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "shopify app dev",
+    "dev:api": "npm run dev --workspace @codflow/api",
+    "dev:admin": "npm run dev --workspace @codflow/admin",
+    "dev:worker": "npm run worker:dev --workspace @codflow/api",
+    "worker": "npm run worker --workspace @codflow/api",
+    "build": "npm run build --workspace @codflow/shared && npm run build --workspace @codflow/api && npm run build --workspace @codflow/admin && npm run build:extension",
+    "build:extension": "node theme-src/build.mjs",
+    "dev:extension": "node theme-src/build.mjs --watch",
+    "start": "npm run start --workspace @codflow/api",
+    "release": "prisma migrate deploy --schema apps/api/prisma/schema.prisma",
+    "preflight": "npm run preflight --workspace @codflow/api",
+    "typecheck": "npm run typecheck --workspaces --if-present && npm run typecheck:extension",
+    "typecheck:extension": "tsc -p theme-src/tsconfig.json",
+    "lint": "eslint .",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "test": "npm run test --workspaces --if-present && npm run test:extension",
+    "test:extension": "vitest run --config vitest.extension.config.ts",
+    "test:watch": "npm run test:watch --workspace @codflow/api",
+    "prisma:generate": "npm run prisma:generate --workspace @codflow/api",
+    "prisma:migrate": "npm run prisma:migrate --workspace @codflow/api",
+    "prisma:deploy": "npm run prisma:deploy --workspace @codflow/api",
+    "prisma:studio": "npm run prisma:studio --workspace @codflow/api",
+    "prisma:seed": "npm run prisma:seed --workspace @codflow/api",
+    "shopify:deploy": "shopify app deploy",
+    "shopify:config": "shopify app config link",
+    "diagnose:theme": "npm run diagnose:theme --workspace @codflow/api --"
+  },
+  "devDependencies": {
+    "@shopify/cli": "4.5.2",
+    "@types/node": "24.13.3",
+    "eslint": "10.8.0",
+    "jsdom": "^30.0.0",
+    "prettier": "3.9.6",
+    "typescript": "5.9.3"
+  },
+  "allowScripts": {}
+}

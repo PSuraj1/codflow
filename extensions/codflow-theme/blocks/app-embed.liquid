@@ -1,0 +1,174 @@
+{% comment %}
+  CodFlow — app embed block.
+
+  Runs on every storefront page once the merchant switches it on under
+  Theme editor -> App embeds. Its job is to publish *page context* that the
+  runtime cannot obtain any other way, and to load the runtime itself.
+
+  The split is deliberate and worth understanding before changing anything here:
+
+    Liquid (this file)  -> facts about the page and the shop that Shopify
+                           already knows: domain, currency, money format,
+                           locale, page type, the product in view, cart totals.
+                           Free — no network request, no layout shift.
+
+    API (codflow.js)    -> the merchant's CodFlow configuration: button labels,
+                           colours, placements, COD fees. Fetched once and kept
+                           in sessionStorage for the rest of the visit.
+
+  Anything Shopify can tell us belongs above. Anything the merchant configures
+  in the CodFlow admin belongs below. Duplicating a value across both is how the
+  two drift apart.
+
+  Assets are declared in the schema rather than written as <script> tags:
+  Shopify then loads them once even if the app block on the product page also
+  requests them, and serves them from its own CDN with correct caching.
+{% endcomment %}
+
+{%- liquid
+  assign cod_product_id = ''
+  assign cod_variant_id = ''
+  assign cod_product_available = false
+
+  if product != blank
+    assign cod_product_id = product.id
+    assign cod_product_available = product.available
+    if product.selected_or_first_available_variant != blank
+      assign cod_variant_id = product.selected_or_first_available_variant.id
+    endif
+  endif
+
+  # Pre-filling the COD form for a signed-in shopper measurably lifts
+  # completion, and these values come from Shopify's own account record rather
+  # than anything the app stores.
+  assign cod_customer_logged_in = false
+  if customer != blank
+    assign cod_customer_logged_in = true
+  endif
+-%}
+
+<script
+  type="application/json"
+  id="codflow-context"
+  data-codflow-context
+>
+  {
+    "shop": {
+      "domain": {{ shop.permanent_domain | json }},
+      "currency": {{ cart.currency.iso_code | default: shop.currency | json }},
+      "moneyFormat": {{ shop.money_format | json }},
+      "locale": {{ request.locale.iso_code | json }},
+      "rootUrl": {{ routes.root_url | json }},
+      {%- comment -%}
+        Drives which country's postal rules the form applies. `localization`
+        is market-aware and follows the buyer's selected country; the shop's
+        own address is the fallback for themes without a country selector.
+      {%- endcomment -%}
+      "countryCode": {{ localization.country.iso_code | default: shop.address.country_code | json }}
+    },
+    "page": {
+      "type": {{ request.page_type | json }},
+      "template": {{ template.name | json }},
+      "designMode": {{ request.design_mode | json }}
+    },
+    "product": {
+      "id": {{ cod_product_id | json }},
+      "variantId": {{ cod_variant_id | json }},
+      "available": {{ cod_product_available | json }},
+      "handle": {{ product.handle | default: '' | json }},
+      "title": {{ product.title | default: '' | json }},
+      "price": {{ product.price | default: 0 | json }},
+      "featuredImage": {{ product.featured_image | image_url: width: 200 | default: '' | json }}
+    },
+    "cart": {
+      "itemCount": {{ cart.item_count | json }},
+      "totalPrice": {{ cart.total_price | json }}
+    },
+    "customer": {
+      "isLoggedIn": {{ cod_customer_logged_in | json }},
+      "email": {{ customer.email | default: '' | json }},
+      "firstName": {{ customer.first_name | default: '' | json }},
+      "lastName": {{ customer.last_name | default: '' | json }},
+      "phone": {{ customer.phone | default: '' | json }}
+    },
+    "theme": {
+      "stickyMobile": {{ block.settings.enable_sticky_mobile | json }},
+      "floating": {{ block.settings.enable_floating | json }},
+      "anchorSelector": {{ block.settings.anchor_selector | default: '' | json }},
+      "hideNativeSelector": {{ block.settings.hide_native_selector | default: '' | json }}
+    },
+    "strings": {
+      "openForm": {{ 'codflow.button.open_form' | t | json }},
+      "close": {{ 'codflow.form.close' | t | json }},
+      "loading": {{ 'codflow.form.loading' | t | json }},
+      "unavailable": {{ 'codflow.form.unavailable' | t | json }},
+      "soldOut": {{ 'codflow.button.sold_out' | t | json }},
+      "errorTitle": {{ 'codflow.form.error_title' | t | json }},
+      "errorBody": {{ 'codflow.form.error_body' | t | json }},
+      "retry": {{ 'codflow.form.retry' | t | json }}
+    }
+  }
+</script>
+
+{% comment %}
+  Container for the COD form dialog.
+
+  Rendered here rather than by the button block so there is exactly one per
+  page: a product page can legitimately show a product-page button, a sticky
+  mobile button and a floating button at once, and three dialogs would each
+  trap focus against the others.
+
+  Left empty. Phase 4 renders the merchant's form fields into it; the dialog
+  chrome, focus trap and scroll lock in codflow.js work against this element
+  whether or not it has content yet.
+{% endcomment %}
+<div
+  id="codflow-root"
+  data-codflow-root
+  hidden
+></div>
+
+{% schema %}
+{
+  "name": "t:codflow.embed.name",
+  "target": "body",
+  "stylesheet": "codflow.css",
+  "javascript": "codflow.js",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:codflow.embed.intro"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sticky_mobile",
+      "label": "t:codflow.embed.sticky_mobile.label",
+      "info": "t:codflow.embed.sticky_mobile.info",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_floating",
+      "label": "t:codflow.embed.floating.label",
+      "info": "t:codflow.embed.floating.info",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:codflow.embed.advanced.header"
+    },
+    {
+      "type": "text",
+      "id": "anchor_selector",
+      "label": "t:codflow.embed.anchor.label",
+      "info": "t:codflow.embed.anchor.info"
+    },
+    {
+      "type": "text",
+      "id": "hide_native_selector",
+      "label": "t:codflow.embed.hide_native.label",
+      "info": "t:codflow.embed.hide_native.info"
+    }
+  ]
+}
+{% endschema %}

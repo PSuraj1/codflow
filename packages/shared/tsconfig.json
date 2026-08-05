@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*.ts"],
+  // Tests are excluded from the published build. `package.json` sets
+  // `files: ["dist"]`, so anything emitted here ships to every consumer —
+  // including the storefront bundle, where a test file is dead weight in a
+  // shopper's browser.
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "vitest.config.ts"]
+}
