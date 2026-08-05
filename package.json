@@ -39,6 +39,9 @@
     "shopify:config": "shopify app config link",
     "diagnose:theme": "npm run diagnose:theme --workspace @codflow/api --"
   },
+  "optionalDependencies": {
+    "@rolldown/binding-linux-x64-gnu": "1.1.5"
+  },
   "devDependencies": {
     "@shopify/cli": "4.5.2",
     "@types/node": "24.13.3",

@@ -185,7 +185,9 @@
       "Bash(git -c user.name=\"ssura\" -c user.email=\"srk@identiwitty.com\" merge origin/main --allow-unrelated-histories --no-commit)",
       "Bash(git checkout *)",
       "Bash(git -c user.name=ssura -c user.email=srk@identiwitty.com commit -q -m ' *)",
-      "Bash(git rev-list *)"
+      "Bash(git rev-list *)",
+      "Bash(timeout 600 npm install --package-lock-only --no-audit --no-fund --os=linux --cpu=x64)",
+      "Bash(timeout 240 git push origin main)"
     ]
   }
 }
