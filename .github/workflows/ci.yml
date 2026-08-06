@@ -51,6 +51,13 @@ jobs:
       - name: Install
         run: npm ci --no-audit --no-fund
 
+      # npm records only the platform binding matching the machine that wrote
+      # the lockfile (npm/cli#4828). A missing Linux one installs cleanly here
+      # and then fails much later, inside a build step, with an error that
+      # names a .node file rather than the lockfile that omitted it.
+      - name: Check Linux native bindings are in the lockfile
+        run: npm run check:bindings
+
       # The API imports types from @prisma/client that do not exist until the
       # client is generated, so this precedes the typecheck rather than the build.
       - name: Generate Prisma client

@@ -23,6 +23,7 @@
     "start": "npm run start --workspace @codflow/api",
     "release": "prisma migrate deploy --schema apps/api/prisma/schema.prisma",
     "preflight": "npm run preflight --workspace @codflow/api",
+    "check:bindings": "node scripts/check-linux-bindings.mjs",
     "typecheck": "npm run build --workspace @codflow/shared && npm run typecheck --workspaces --if-present && npm run typecheck:extension",
     "typecheck:extension": "tsc -p theme-src/tsconfig.json",
     "lint": "eslint .",
@@ -40,7 +41,9 @@
     "diagnose:theme": "npm run diagnose:theme --workspace @codflow/api --"
   },
   "optionalDependencies": {
-    "@rolldown/binding-linux-x64-gnu": "1.1.5"
+    "@rolldown/binding-linux-x64-gnu": "1.1.5",
+    "lightningcss-linux-x64-gnu": "1.33.0",
+    "@msgpackr-extract/msgpackr-extract-linux-x64": "3.0.4"
   },
   "devDependencies": {
     "@shopify/cli": "4.5.2",

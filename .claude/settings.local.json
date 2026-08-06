@@ -189,7 +189,15 @@
       "Bash(timeout 600 npm install --package-lock-only --no-audit --no-fund --os=linux --cpu=x64)",
       "Bash(timeout 240 git push origin main)",
       "Bash(timeout 120 git fetch origin -q)",
-      "Bash(powershell -NoProfile -Command '$p=Get-CimInstance Win32_Process -Filter \"Name='\\\\''node.exe'\\\\''\"; if\\($p\\){\\($p|Measure-Object\\).Count.ToString\\(\\)+'\\\\'' node procs'\\\\''} else {'\\\\''none running'\\\\''}')"
+      "Bash(powershell -NoProfile -Command '$p=Get-CimInstance Win32_Process -Filter \"Name='\\\\''node.exe'\\\\''\"; if\\($p\\){\\($p|Measure-Object\\).Count.ToString\\(\\)+'\\\\'' node procs'\\\\''} else {'\\\\''none running'\\\\''}')",
+      "Bash(docker build *)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(timeout 600 npm install --package-lock-only --no-audit --no-fund)",
+      "Bash(cp package-lock.json /tmp/good-lock.json)",
+      "Bash(cp /tmp/broken-lock.json package-lock.json)",
+      "Bash(node scripts/check-linux-bindings.mjs)",
+      "Bash(cp package-lock.json package-lock.good.json)",
+      "Bash(mv package-lock.good.json package-lock.json)"
     ]
   }
 }
