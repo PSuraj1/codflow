@@ -51,6 +51,17 @@ services:
         fromDatabase:
           name: codflow-postgres
           property: connectionString
+
+      # Prisma's schema declares `directUrl`, and its CLI refuses to load a
+      # schema whose env() reference is unset — even though the app itself
+      # falls back to DATABASE_URL. Without this, `npm run release` fails
+      # validation before it reaches a migration. Render's managed Postgres
+      # has no separate pooler endpoint, so the two are the same string; the
+      # distinction exists for deployments that put PgBouncer in front.
+      - key: DIRECT_DATABASE_URL
+        fromDatabase:
+          name: codflow-postgres
+          property: connectionString
       - key: REDIS_URL
         fromService:
           type: redis
@@ -122,6 +133,17 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
+        fromDatabase:
+          name: codflow-postgres
+          property: connectionString
+
+      # Prisma's schema declares `directUrl`, and its CLI refuses to load a
+      # schema whose env() reference is unset — even though the app itself
+      # falls back to DATABASE_URL. Without this, `npm run release` fails
+      # validation before it reaches a migration. Render's managed Postgres
+      # has no separate pooler endpoint, so the two are the same string; the
+      # distinction exists for deployments that put PgBouncer in front.
+      - key: DIRECT_DATABASE_URL
         fromDatabase:
           name: codflow-postgres
           property: connectionString
