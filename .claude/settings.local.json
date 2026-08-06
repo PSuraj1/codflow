@@ -197,7 +197,8 @@
       "Bash(cp /tmp/broken-lock.json package-lock.json)",
       "Bash(node scripts/check-linux-bindings.mjs)",
       "Bash(cp package-lock.json package-lock.good.json)",
-      "Bash(mv package-lock.good.json package-lock.json)"
+      "Bash(mv package-lock.good.json package-lock.json)",
+      "Bash(curl -s --max-time 45 __TRACKED_VAR__/api/health/ready)"
     ]
   }
 }

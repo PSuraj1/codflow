@@ -139,3 +139,33 @@ jobs:
             echo "::error::The container did not reject an unsafe production configuration."
             exit 1
           fi
+
+      # The legal pages are read from disk at request time, and their URLs go
+      # on the App Store listing. `.dockerignore` excludes `**/*.md`, so a
+      # missing negation copies an empty directory and every /legal/* URL 404s
+      # in production while working perfectly in development — which is exactly
+      # what happened on the first deploy. Checked in the image rather than
+      # against a running server: no database is needed to prove the files
+      # shipped.
+      - name: Legal pages shipped in the image
+        run: |
+          for page in privacy-policy terms-of-service data-processing-addendum support; do
+            if ! docker run --rm --entrypoint sh codflow:ci               -c "test -s docs/legal/$page.md"; then
+              echo "::error::docs/legal/$page.md is missing from the image."
+              echo "Check the '!docs/legal/*.md' negation in .dockerignore."
+              exit 1
+            fi
+          done
+          echo "All four legal pages are present."
+
+      # The renderer reads them at request time, so a file that shipped but
+      # cannot be parsed still 404s. Cheap to prove here.
+      - name: Legal pages render
+        run: |
+          docker run --rm --entrypoint node codflow:ci -e "
+            const { readFileSync } = require('node:fs');
+            const { renderMarkdown } = require('./apps/api/dist/modules/legal/markdown.js');
+            const html = renderMarkdown(readFileSync('docs/legal/privacy-policy.md', 'utf8'));
+            if (!html.includes('<h1>')) { console.error('Rendered no heading'); process.exit(1); }
+            console.log('Privacy policy renders,', html.length, 'bytes of HTML.');
+          "
