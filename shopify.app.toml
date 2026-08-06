@@ -9,7 +9,7 @@
 name = "codflow"
 handle = "codflow-codkar"
 client_id = "359bf08a92b05ac7053cb08e645045d3"
-application_url = "https://stronger-ethnic-positioning-refers.trycloudflare.com"
+application_url = "https://app.codflow.in"
 embedded = true
 
 [access_scopes]
@@ -30,8 +30,8 @@ use_legacy_install_flow = false
 
 [auth]
 redirect_urls = [
-  "https://stronger-ethnic-positioning-refers.trycloudflare.com/api/auth/callback",
-  "https://stronger-ethnic-positioning-refers.trycloudflare.com/api/auth/shopify/callback"
+  "https://app.codflow.in/api/auth/callback",
+  "https://app.codflow.in/api/auth/shopify/callback"
 ]
 
 # App proxy — how the theme app extension talks to the API.
@@ -49,7 +49,7 @@ redirect_urls = [
 #      really came through a storefront rather than from a script somewhere.
 #   3. Requests inherit the storefront's own caching and locale routing.
 [app_proxy]
-url = "https://stronger-ethnic-positioning-refers.trycloudflare.com/api/proxy"
+url = "https://app.codflow.in/api/proxy"
 subpath = "codflow"
 prefix = "apps"
 
@@ -116,4 +116,11 @@ api_version = "2026-07"
 embedded = false
 
 [build]
-automatically_update_urls_on_dev = true
+# False now that the app has a permanent home. Left true, `shopify app dev`
+# rewrites application_url, the redirect URLs and the app proxy URL to whatever
+# tunnel it minted that run — which would point production at a hostname that
+# dies when the dev server stops.
+#
+# The cost is that local development no longer updates them for you: use a
+# stable tunnel, or put the URLs back by hand for the session.
+automatically_update_urls_on_dev = false

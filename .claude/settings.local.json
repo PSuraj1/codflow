@@ -198,7 +198,10 @@
       "Bash(node scripts/check-linux-bindings.mjs)",
       "Bash(cp package-lock.json package-lock.good.json)",
       "Bash(mv package-lock.good.json package-lock.json)",
-      "Bash(curl -s --max-time 45 __TRACKED_VAR__/api/health/ready)"
+      "Bash(curl -s --max-time 45 __TRACKED_VAR__/api/health/ready)",
+      "Bash(curl -s -o /dev/null -w 'http %{http_code} | tls %{ssl_verify_result} \\(0=valid\\) | %{time_total}s\\\\n' --max-time 45 __TRACKED_VAR__/api/health)",
+      "Bash(curl -s -o /dev/null -w 'HTTP %{http_code}\\\\n' --max-time 45 __TRACKED_VAR__/legal/privacy)",
+      "Bash(curl -s --max-time 45 __TRACKED_VAR__/legal)"
     ]
   }
 }
