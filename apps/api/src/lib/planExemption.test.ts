@@ -15,6 +15,13 @@ const { config } = vi.hoisted(() => ({
 
 vi.mock('../config/env', () => ({ config }));
 
+// The module warns at import about entries that can never match. Stubbed
+// because these tests are about the matching rule, not about logging — and the
+// real logger reads config the mock above deliberately does not provide.
+vi.mock('./logger', () => ({
+  createLogger: () => ({ warn: vi.fn(), info: vi.fn(), error: vi.fn(), debug: vi.fn() }),
+}));
+
 /** Re-imports the module so the exempt set is rebuilt from the mocked config. */
 async function load(shops: string[]) {
   config.billing.exemptShops = shops;
@@ -86,5 +93,50 @@ describe('multiple shops', () => {
     expect(isPlanExempt('a.myshopify.com')).toBe(true);
     expect(isPlanExempt('b.myshopify.com')).toBe(true);
     expect(isPlanExempt('c.myshopify.com')).toBe(false);
+  });
+});
+
+/**
+ * People paste URLs, not domains.
+ *
+ * The value matched is `Shop.domain`, always the bare `*.myshopify.com` tenant
+ * key — so an entry copied out of a browser address bar has to mean the same
+ * thing as one typed by hand.
+ */
+describe('entry normalisation', () => {
+  it.each([
+    ['a bare domain', 'a7ypnk-vm.myshopify.com'],
+    ['an https URL', 'https://a7ypnk-vm.myshopify.com'],
+    ['a trailing slash', 'https://a7ypnk-vm.myshopify.com/'],
+    ['http', 'http://a7ypnk-vm.myshopify.com/'],
+    ['a path', 'https://a7ypnk-vm.myshopify.com/admin'],
+    ['surrounding whitespace', '  a7ypnk-vm.myshopify.com	'],
+    ['mixed case', 'A7YPNK-VM.MyShopify.com'],
+  ])('accepts %s', async (_label, entry) => {
+    const { isPlanExempt } = await load([entry]);
+
+    expect(isPlanExempt('a7ypnk-vm.myshopify.com')).toBe(true);
+  });
+
+  it('drops entries that normalise to nothing', async () => {
+    const { hasPlanExemptions } = await load(['', '   ', 'https://']);
+
+    expect(hasPlanExemptions()).toBe(false);
+  });
+
+  /**
+   * The trap this whole normalisation exists around.
+   *
+   * A shop is only ever identified by its permanent `*.myshopify.com` domain —
+   * that is what `Shop.domain` stores and what every caller passes. So a custom
+   * storefront domain in the config exempts nothing, however it is written, and
+   * it does so silently. The boot warning is what makes it visible.
+   */
+  it('exempts no shop when configured with a custom storefront domain', async () => {
+    const { isPlanExempt } = await load(['https://megastoreindia.com/']);
+
+    // The store this was meant to cover, identified the way the app identifies it.
+    expect(isPlanExempt('megastoreindia.myshopify.com')).toBe(false);
+    expect(isPlanExempt('some-store.myshopify.com')).toBe(false);
   });
 });
