@@ -53,6 +53,21 @@ COPY apps ./apps
 # @prisma/client that do not exist until `prisma generate` has run.
 RUN npx prisma generate --schema apps/api/prisma/schema.prisma
 
+# Build-time configuration for the admin bundle.
+#
+# Vite inlines both of these at build time, so they must exist *here* rather
+# than only in the running container. Render and most platforms expose service
+# environment variables to a Docker build through matching `ARG`s.
+#
+# An empty SHOPIFY_API_KEY is the dangerous one: App Bridge fails to
+# initialise, and the embedded admin renders a blank frame with nothing in the
+# console pointing at the cause. Defaulted to empty so a plain `docker build`
+# still succeeds for a smoke test.
+ARG SHOPIFY_API_KEY=""
+ARG SUPPORT_TELEGRAM_URL=""
+ENV SHOPIFY_API_KEY=$SHOPIFY_API_KEY
+ENV SUPPORT_TELEGRAM_URL=$SUPPORT_TELEGRAM_URL
+
 RUN npm run build --workspace @codflow/shared \
     && npm run build --workspace @codflow/api \
     && npm run build --workspace @codflow/admin

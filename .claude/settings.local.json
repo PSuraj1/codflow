@@ -187,7 +187,9 @@
       "Bash(git -c user.name=ssura -c user.email=srk@identiwitty.com commit -q -m ' *)",
       "Bash(git rev-list *)",
       "Bash(timeout 600 npm install --package-lock-only --no-audit --no-fund --os=linux --cpu=x64)",
-      "Bash(timeout 240 git push origin main)"
+      "Bash(timeout 240 git push origin main)",
+      "Bash(timeout 120 git fetch origin -q)",
+      "Bash(powershell -NoProfile -Command '$p=Get-CimInstance Win32_Process -Filter \"Name='\\\\''node.exe'\\\\''\"; if\\($p\\){\\($p|Measure-Object\\).Count.ToString\\(\\)+'\\\\'' node procs'\\\\''} else {'\\\\''none running'\\\\''}')"
     ]
   }
 }

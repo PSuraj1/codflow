@@ -69,8 +69,11 @@ services:
         sync: false
       - key: SHOPIFY_SCOPES
         sync: false
+      # Must equal `handle` in shopify.app.toml. It builds the managed-pricing
+      # URL, so a wrong value produces a Shopify 404 on the upgrade button
+      # rather than anything the app can detect.
       - key: SHOPIFY_APP_HANDLE
-        value: codflow
+        value: codflow-codkar
 
       # openssl rand -base64 32 — rotating this makes every stored Google
       # refresh token undecryptable, so treat it as permanent.
@@ -84,6 +87,16 @@ services:
       - key: GOOGLE_CLIENT_SECRET
         sync: false
       - key: GOOGLE_REDIRECT_URI
+        sync: false
+
+      # Shops that ignore plan limits — the stores you run yourself. Must be set
+      # on *both* services: the worker enforces limits independently, and one
+      # without this applies Free-tier ceilings to background pushes.
+      - key: PLAN_EXEMPT_SHOPS
+        sync: false
+
+      # Inlined into the admin bundle at build time, not read at runtime.
+      - key: SUPPORT_TELEGRAM_URL
         sync: false
 
       - key: LOG_LEVEL
@@ -129,8 +142,11 @@ services:
         sync: false
       - key: SHOPIFY_SCOPES
         sync: false
+      # Must equal `handle` in shopify.app.toml. It builds the managed-pricing
+      # URL, so a wrong value produces a Shopify 404 on the upgrade button
+      # rather than anything the app can detect.
       - key: SHOPIFY_APP_HANDLE
-        value: codflow
+        value: codflow-codkar
       - key: ENCRYPTION_KEY
         fromService:
           type: web
@@ -147,6 +163,16 @@ services:
         sync: false
       - key: GOOGLE_REDIRECT_URI
         sync: false
+      # Shops that ignore plan limits — the stores you run yourself. Must be set
+      # on *both* services: the worker enforces limits independently, and one
+      # without this applies Free-tier ceilings to background pushes.
+      - key: PLAN_EXEMPT_SHOPS
+        sync: false
+
+      # Inlined into the admin bundle at build time, not read at runtime.
+      - key: SUPPORT_TELEGRAM_URL
+        sync: false
+
       - key: LOG_LEVEL
         value: info
 
