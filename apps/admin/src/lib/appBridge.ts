@@ -108,18 +108,34 @@ export function openTop(url: string): void {
   // A relative URL would resolve against the *top* frame's origin — which is
   // admin.shopify.com, not this app — and 404 there. Absolutising against the
   // iframe's own origin first is what makes app-relative paths work.
-  const absolute = new URL(url, window.location.origin).toString();
+  navigateTop(new URL(url, window.location.origin).toString());
+}
 
+/**
+ * Navigates the top window to an already-absolute URL.
+ *
+ * For destinations that are not the app's own — Google's consent screen, most
+ * obviously — where absolutising against this origin would corrupt the URL.
+ *
+ * **Never `top.location.assign()`.** Reading any named property from a
+ * cross-origin `Location` is blocked, so that call throws
+ * "Failed to read a named property 'assign' from 'Location'" the moment the app
+ * is embedded — which is always, in production. Assigning to `top.location`
+ * *is* permitted cross-origin, because navigating someone else's frame is
+ * allowed while inspecting it is not; `window.open(url, '_top')` does the same
+ * thing without touching the property at all.
+ */
+export function navigateTop(absoluteUrl: string): void {
   const bridge = window.shopify;
 
   if (bridge?.open) {
-    bridge.open(absolute, '_top');
+    bridge.open(absoluteUrl, '_top');
     return;
   }
 
-  // Outside the admin there is no top frame to escape to, and inside it this is
-  // what App Bridge's own `open` does.
-  window.top?.location.assign(absolute);
+  // Works both embedded and standalone: with no frame to escape, `_top` is
+  // this window.
+  window.open(absoluteUrl, '_top');
 }
 
 /**

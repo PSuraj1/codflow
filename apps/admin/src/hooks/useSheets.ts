@@ -7,7 +7,7 @@ import type {
   WorksheetSummary,
 } from '@codflow/shared';
 import { api } from '../lib/apiClient';
-import { showToast } from '../lib/appBridge';
+import { navigateTop, showToast } from '../lib/appBridge';
 
 /** Data access for the Google Sheets settings screen. */
 
@@ -124,11 +124,10 @@ export function useConnectGoogle() {
     mutationFn: () => api.get<{ url: string }>('/admin/sheets/connect-url'),
     onSuccess: ({ url }) => {
       // Google sends `X-Frame-Options: DENY` on its consent screen, so the app
-      // iframe cannot render it. This has to leave the frame entirely, and it
-      // is an absolute Google URL rather than an app-relative path — so it goes
-      // straight to the top window instead of through `openTop`, which
-      // absolutises against the app's own origin.
-      window.top?.location.assign(url);
+      // iframe cannot render it. This has to leave the frame entirely, and the
+      // URL is already absolute — hence `navigateTop` rather than `openTop`,
+      // which would absolutise it against the app's own origin.
+      navigateTop(url);
     },
     onError: (error: Error) => showToast(error.message, true),
   });
