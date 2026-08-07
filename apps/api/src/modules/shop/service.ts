@@ -18,6 +18,7 @@ import { config } from '../../config/env';
 import { createLogger } from '../../lib/logger';
 import { NotFoundError, ValidationError } from '../../lib/errors';
 import { invalidateTag, shopTag } from '../../lib/cache';
+import { withPlanExemption } from '../../lib/planExemption';
 import { assertFeature } from '../billing/limits';
 import { tryAdminGraphql } from '../../shopify/graphql';
 import {
@@ -155,9 +156,15 @@ function toShopIdentity(shop: ShopWithContext): ShopIdentity {
 function toSubscriptionSummary(shop: ShopWithContext): SubscriptionSummary {
   const subscription = shop.subscription;
 
+  /**
+   * The exemption is applied here as well as in `effectivePlan`, and it has to
+   * be: the gates read one and the admin renders the other. Without it an
+   * exempt shop is gated as Enterprise while its badge says Free — every paid
+   * feature works, and the merchant is told to upgrade to reach them.
+   */
   if (!subscription) {
     return {
-      plan: Plan.FREE,
+      plan: withPlanExemption(shop.domain, Plan.FREE),
       status: SubscriptionStatus.ACTIVE,
       trialEndsAt: null,
       currentPeriodEnd: null,
@@ -166,7 +173,7 @@ function toSubscriptionSummary(shop: ShopWithContext): SubscriptionSummary {
   }
 
   return {
-    plan: subscription.plan as Plan,
+    plan: withPlanExemption(shop.domain, subscription.plan as Plan),
     status: subscription.status as SubscriptionStatus,
     trialEndsAt: subscription.trialEndsAt?.toISOString() ?? null,
     currentPeriodEnd: subscription.currentPeriodEnd?.toISOString() ?? null,
