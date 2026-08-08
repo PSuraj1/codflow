@@ -91,14 +91,14 @@ export async function refreshMetadata(shopId: string, session: Session): Promise
  *
  * A merchant selling in three languages should not have to discover a language
  * setting to stop their COD form appearing in English only. Restricted to
- * locales CodFlow actually ships translations for — anything else would render
+ * locales CODkar actually ships translations for — anything else would render
  * a form with untranslated labels, which is worse than English.
  */
 async function syncLocales(shopId: string, session: Session): Promise<void> {
   const result = await tryAdminGraphql<ShopLocalesResponse>(session, SHOP_LOCALES_QUERY);
   if (!result) return;
 
-  // Shopify returns BCP 47 tags (`pt-BR`); CodFlow's Locale enum is
+  // Shopify returns BCP 47 tags (`pt-BR`); CODkar's Locale enum is
   // language-only and uppercase.
   const toLocale = (tag: string): Locale | null => {
     const language = tag.split('-')[0]?.toUpperCase() ?? '';
@@ -119,7 +119,7 @@ async function syncLocales(shopId: string, session: Session): Promise<void> {
     });
   }
 
-  // Only locales CodFlow ships translations for. Enabling one it does not
+  // Only locales CODkar ships translations for. Enabling one it does not
   // would render a COD form with untranslated labels, which is worse for a
   // shopper than a form that is consistently in English.
   if (published.length > 0) {

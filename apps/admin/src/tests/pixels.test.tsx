@@ -189,7 +189,7 @@ describe('a pixel that cannot send', () => {
     renderWithQuery(<PixelForm pixel={pixel()} open onClose={() => undefined} />);
 
     await userEvent.click(screen.getByRole('checkbox', { name: /from the shopper's browser/i }));
-    await userEvent.click(screen.getByRole('checkbox', { name: /from codflow's server/i }));
+    await userEvent.click(screen.getByRole('checkbox', { name: /from codkar's server/i }));
 
     expect(screen.getByText(/would never send anything/i)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Save' }).getAttribute('aria-disabled')).toBe('true');

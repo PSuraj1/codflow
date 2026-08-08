@@ -116,7 +116,7 @@ export interface DriveFile {
 /**
  * Lists spreadsheets this app can see.
  *
- * Under `drive.file` that means spreadsheets CodFlow created, plus any the
+ * Under `drive.file` that means spreadsheets CODkar created, plus any the
  * merchant explicitly granted through Google's picker — not their whole Drive.
  * A merchant who expects to see every sheet they own will not, and the UI says
  * so rather than presenting an unexplained empty list.

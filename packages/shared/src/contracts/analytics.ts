@@ -9,7 +9,7 @@
  * `DailyStat` it is ninety indexed rows, and stays ninety forever.
  *
  * The cost of that choice is that the aggregate has to be *written*, from two
- * places that can disagree: CodFlow's own lifecycle (an order was created,
+ * places that can disagree: CODkar's own lifecycle (an order was created,
  * pushed, blocked) and Shopify's webhooks (it was cancelled, fulfilled,
  * refunded). Both write through the same recorder, and the whole range can be
  * rebuilt from `cod_orders` when they do drift — see `POST /rebuild`.

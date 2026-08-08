@@ -13,7 +13,7 @@
       "retry": "दोबारा कोशिश करें"
     },
     "block": {
-      "design_hint": "CodFlow बटन — इसे अपने लाइव स्टोर पर दिखाने के लिए थीम सेटिंग्स → ऐप एम्बेड में “CodFlow — Cash on Delivery” चालू करें।"
+      "design_hint": "CODkar बटन — इसे अपने लाइव स्टोर पर दिखाने के लिए थीम सेटिंग्स → ऐप एम्बेड में “CODkar — Cash on Delivery” चालू करें।"
     }
   }
 }

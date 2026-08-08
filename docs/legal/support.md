@@ -1,13 +1,13 @@
 # Support
 
-**CodFlow — Cash on Delivery for Shopify**
+**CODkar — Cash on Delivery for Shopify**
 
 ## Getting help
 
 Email [SUPPORT EMAIL]. Target first response: [RESPONSE TIME], [SUPPORT HOURS].
 
 Tell us your **store domain** and, where it is about a specific order, its
-**CodFlow reference** — the `CF-` code shown in the app. That is enough for us
+**CODkar reference** — the `CF-` code shown in the app. That is enough for us
 to find it without asking you for anything else.
 
 ## Things that are usually not faults

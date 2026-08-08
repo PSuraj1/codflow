@@ -34,7 +34,7 @@ import { SectionTabs, COD_FORM_TABS } from '../components/SectionTabs';
  *
  * The storefront has honoured every one of these values since the form was
  * built, and nothing in the admin could set any of them — so every shop
- * rendered CodFlow's default green regardless of their own brand.
+ * rendered CODkar's default green regardless of their own brand.
  *
  * Worth knowing while editing: a COD button with its own colours ignores these.
  * `ButtonConfig` carries its own palette and wins, which is what a merchant

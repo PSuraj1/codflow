@@ -9,7 +9,7 @@ import type { ThemeMode } from '../enums.js';
  * button is the thing they tuned most recently and most specifically.
  *
  * The storefront has honoured all of it since the form was built. Nothing in
- * the admin could change any of it until now, so every shop rendered CodFlow's
+ * the admin could change any of it until now, so every shop rendered CODkar's
  * default green.
  */
 /**

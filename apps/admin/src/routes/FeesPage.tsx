@@ -149,7 +149,7 @@ export function FeesPage() {
                     Delivery
                   </Text>
                   <Text as="p" variant="bodySm" tone="subdued">
-                    A flat charge added to every COD order. CodFlow does not read your Shopify
+                    A flat charge added to every COD order. CODkar does not read your Shopify
                     shipping rates — a COD order never reaches checkout, which is where those are
                     applied — so this is the only delivery charge a shopper is quoted.
                   </Text>

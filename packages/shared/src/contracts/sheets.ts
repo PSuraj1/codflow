@@ -46,7 +46,7 @@ export const SheetFieldGroup = {
 export type SheetFieldGroup = (typeof SheetFieldGroup)[keyof typeof SheetFieldGroup];
 
 /**
- * Everything CodFlow can write into a sheet.
+ * Everything CODkar can write into a sheet.
  *
  * Ordered roughly as a merchant builds a sheet left to right — when it
  * happened, which order, what was bought, who bought it, where it goes, what it

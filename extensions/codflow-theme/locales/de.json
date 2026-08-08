@@ -13,7 +13,7 @@
       "retry": "Erneut versuchen"
     },
     "block": {
-      "design_hint": "CodFlow-Button — aktivieren Sie „CodFlow — Cash on Delivery“ unter Theme-Einstellungen → App-Einbettungen, damit er in Ihrem Shop erscheint."
+      "design_hint": "CODkar-Button — aktivieren Sie „CODkar — Cash on Delivery“ unter Theme-Einstellungen → App-Einbettungen, damit er in Ihrem Shop erscheint."
     }
   }
 }

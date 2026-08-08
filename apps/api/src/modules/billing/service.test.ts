@@ -118,7 +118,7 @@ describe('resolvePlan', () => {
     expect(service.resolvePlan('  Starter  ')).toBe(Plan.STARTER);
     expect(service.resolvePlan('Pro — Annual')).toBe(Plan.PRO);
     expect(service.resolvePlan('Enterprise (USD)')).toBe(Plan.ENTERPRISE);
-    expect(service.resolvePlan('CodFlow Pro Monthly')).toBe(Plan.PRO);
+    expect(service.resolvePlan('CODkar Pro Monthly')).toBe(Plan.PRO);
   });
 
   it('falls back to the lowest paid tier, never to free, on an unknown name', () => {

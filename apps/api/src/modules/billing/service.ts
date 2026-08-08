@@ -80,7 +80,7 @@ export function resolvePlan(planName: string): Plan {
     if (definition.name.toLowerCase() === normalized) return definition.plan;
   }
 
-  // Substring fallback, for a dashboard name like "CodFlow Pro Monthly".
+  // Substring fallback, for a dashboard name like "CODkar Pro Monthly".
   for (const definition of PLAN_CATALOGUE) {
     if (definition.plan === Plan.FREE) continue;
     if (normalized.includes(definition.name.toLowerCase())) return definition.plan;

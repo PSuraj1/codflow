@@ -284,12 +284,12 @@ export const DEFAULT_NOTIFICATION_TEMPLATES: readonly DefaultNotificationTemplat
   {
     key: 'sync_failure_alert',
     channel: NotificationChannel.EMAIL,
-    subject: '[CodFlow] Google Sheets sync is failing',
+    subject: '[CODkar] Google Sheets sync is failing',
     body:
       'Order {{reference}} could not be written to your Google Sheet.\n\n' +
       'Error: {{errorMessage}}\n\n' +
       'Failed syncs retry automatically. If this persists, reconnect your ' +
-      'Google account in CodFlow → Settings → Google Sheets.',
+      'Google account in CODkar → Settings → Google Sheets.',
   },
 ];
 

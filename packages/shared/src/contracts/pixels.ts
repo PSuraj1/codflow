@@ -101,7 +101,7 @@ export const MONETARY_EVENTS: readonly PixelEventName[] = [
 ];
 
 /**
- * Events CodFlow can raise server-side.
+ * Events CODkar can raise server-side.
  *
  * Deliberately narrower than the full list: the server only observes what
  * happens to an *order*. Page views and searches are browser-only by nature,

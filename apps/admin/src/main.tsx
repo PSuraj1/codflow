@@ -43,11 +43,11 @@ function renderStandaloneNotice(root: HTMLElement): void {
   root.innerHTML = `
     <main style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
                  max-width: 34rem; margin: 4rem auto; padding: 0 1.5rem; line-height: 1.6;">
-      <h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">CodFlow</h1>
+      <h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">CODkar</h1>
       <p>This app runs inside the Shopify admin and cannot be opened directly.</p>
       ${
         installUrl
-          ? `<p><a href="${installUrl}" style="color: #005bd3;">Open CodFlow in your Shopify admin →</a></p>`
+          ? `<p><a href="${installUrl}" style="color: #005bd3;">Open CODkar in your Shopify admin →</a></p>`
           : `<p>Open it from <strong>Apps</strong> in your Shopify admin.</p>`
       }
     </main>`;

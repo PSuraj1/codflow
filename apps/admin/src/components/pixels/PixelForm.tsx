@@ -236,7 +236,7 @@ export function PixelForm({ pixel, open, onClose }: Props) {
             />
 
             <Checkbox
-              label="From CodFlow's server"
+              label="From CODkar's server"
               checked={draft.serverSideEnabled}
               onChange={(serverSideEnabled) => patch({ serverSideEnabled })}
               helpText={`Not affected by ad blockers, and the only way a COD order is reported at all — the shopper has usually closed the tab by then. Covers ${SERVER_SIDE_EVENTS.map((event) => EVENT_LABELS[event].toLowerCase()).join(', ')}.`}
@@ -282,7 +282,7 @@ export function PixelForm({ pixel, open, onClose }: Props) {
                 helpText={
                   draft.serverSideEnabled
                     ? "Stored encrypted. It is never sent to a shopper's browser and never shown again here."
-                    : `Needed to send events from CodFlow's server — tick that above to use it. Stored encrypted, and never sent to a shopper's browser.`
+                    : `Needed to send events from CODkar's server — tick that above to use it. Stored encrypted, and never sent to a shopper's browser.`
                 }
               />
 
@@ -387,7 +387,7 @@ export function PixelForm({ pixel, open, onClose }: Props) {
               label="Improve matching with customer details"
               checked={draft.advancedMatching}
               onChange={(advancedMatching) => patch({ advancedMatching })}
-              helpText="Email and phone are hashed on the server before they are sent. The raw values never leave CodFlow."
+              helpText="Email and phone are hashed on the server before they are sent. The raw values never leave CODkar."
             />
 
             <Checkbox

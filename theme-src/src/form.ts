@@ -1,5 +1,5 @@
 /**
- * CodFlow — COD form renderer.
+ * CODkar — COD form renderer.
  *
  * Bundled by `build.mjs` into `assets/codflow-form.js`, and loaded lazily by
  * `codflow.js` the first time a shopper opens the dialog. Most page views never

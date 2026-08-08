@@ -14,7 +14,7 @@ import {
 /**
  * A merchant's own endpoint.
  *
- * For anything CodFlow does not integrate with directly — a data warehouse, a
+ * For anything CODkar does not integrate with directly — a data warehouse, a
  * self-hosted analytics stack, an in-house attribution service.
  *
  * The payload is **signed**. A merchant receiving conversion data on a public
@@ -80,7 +80,7 @@ export const customProvider: Provider = {
           'Content-Type': 'application/json',
           'X-CodFlow-Signature': `sha256=${signature}`,
           'X-CodFlow-Event': payload.customEventName ?? payload.eventName,
-          'User-Agent': 'CodFlow/1.0',
+          'User-Agent': 'CODkar/1.0',
         },
         body,
       });

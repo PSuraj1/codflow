@@ -1,4 +1,4 @@
-# CodFlow — handoff
+# CODkar — handoff
 
 Orientation for picking this project up cold. [README.md](README.md) explains
 *why* the architecture is what it is; this file explains *where things are*,
@@ -11,9 +11,15 @@ Orientation for picking this project up cold. [README.md](README.md) explains
 The app is **deployed and installed**. It runs at `https://app.codflow.in` on
 Render, and is installed on the development store `codkar-th9dk7h6`.
 
-**It cannot create orders.** Every Shopify Admin API call returns 403 — see
-[The blocker](#the-blocker). A fix is written and untested against live
-Shopify.
+**It works end to end.** On 8 Aug 2026 a real cash-on-delivery order was placed
+through the storefront, priced against Shopify, written to Shopify as a
+completed order, and synced to Google Sheets. That is the first time the whole
+path has run in production, and it closes the 403 that blocked everything —
+see [The blocker, solved](#the-blocker-solved).
+
+The dashboard now reads **INR** and the store *name*, which is the proof: those
+fields fall back to USD and the store *domain* when the `shop` metadata query
+fails, and that fallback is what the failure looked like for weeks.
 
 Typecheck and build clean. 1,068 tests, no external services required.
 
@@ -29,61 +35,64 @@ extensions         64 tests
 | Host | Render — `codflow-web`, `codflow-worker`, Postgres 17, Valkey 8 |
 | Domain | `app.codflow.in`, TLS issued |
 | Repo | `github.com/PSuraj1/codflow`, branch `main` |
-| Shopify app | `codflow-codkar`, client id `359bf08a92b05ac7053cb08e645045d3` |
-| Released version | `codflow-codkar-5` |
+| Shopify app | handle `codflow-codkar`, client id `359bf08a92b05ac7053cb08e645045d3` |
 | Distribution | **Public** |
 | Migrations | 8, applied to the hosted database |
 
+**The product is called CODkar; almost every identifier still says `codflow`.**
+That divergence is deliberate, not drift. The rename on 8 Aug 2026 changed only
+what a merchant reads — the app name, admin copy, theme-editor strings, emails
+and legal pages. Everything a rename would have broken kept its name: the app
+handle (`SHOPIFY_APP_HANDLE` must match it), the app-proxy subpath (`codflow`,
+which deployed storefront assets call), the domain, `@codflow/*` packages,
+`codflow.js`/`codflow.css`, the `.codflow-*` CSS prefix, `codflow:*` DOM events,
+`X-CodFlow-*` headers, the `CodFlow*` GraphQL operation names and JS globals,
+and the Render and database names. Renaming any of those is a separate,
+riskier job — see [Traps](#traps).
+
 ---
 
-## The blocker
+## The blocker, solved
 
-Every Admin API call fails with `403 Forbidden` and an empty response body,
-including queries touching no customer data at all — a `ProductVariant` lookup
-fails, and so does the `shop` metadata query.
+Kept because the shape of this failure is worth recognising again, and because
+the fix is now load-bearing.
 
-Two symptoms follow from that one cause, and both look like separate bugs:
+**The symptom.** Every Admin API call returned `403 Forbidden` with an empty
+body — including queries touching no customer data at all. A `ProductVariant`
+lookup failed, and so did the `shop` metadata query. Two consequences looked
+like separate bugs: orders failed because `resolveLineItems` could not price the
+cart, and the phone field demanded `+91` because `shop.countryCode` was null, so
+`libphonenumber-js` had no country to parse a bare ten-digit number against.
 
-- **Orders fail.** `resolveLineItems` cannot price the cart, throws
-  `ShopifyApiError`, and the shopper sees the generic "could not load" message
-  because the storefront has no better one for a 502.
-- **The phone field demands `+91`.** `shop.countryCode` is null because
-  `refreshMetadata` failed the same way, so `libphonenumber-js` has no country
-  to parse a bare ten-digit number against.
-
-The confirming evidence is on the dashboard rather than in the logs: it shows
-**USD** and the store *domain* instead of INR and the store *name*. Those are
-the fallback defaults, and they only appear when the metadata call failed.
-
-**Most likely cause — the app was asking for a token Shopify no longer accepts.**
-Shopify is replacing permanent offline access tokens with expiring ones, and
-the Partner dashboard's API health page reported *"Deprecated offline token use
-detected"* against this app, adding that deprecated tokens **"can't be used to
-make calls and must be exchanged for new offline tokens."** That explains a
-403 on queries touching no customer data: the token is refused, not the query.
-
-The cause was one missing argument. `shopify.auth.tokenExchange` takes
+**The cause was one missing argument.** `shopify.auth.tokenExchange` takes
 `expiring?: boolean` and sends `expiring: '0'` when it is absent, so every
-exchange explicitly requested a permanent token. Nothing re-exchanged it
-either: `resolveSession` only re-exchanges on a missing token or narrowed
-scopes, never on age or rejection.
+exchange this app ever performed explicitly asked for a *permanent* offline
+token — which Shopify no longer accepts on calls. The app installed cleanly and
+then failed everything. Nothing re-exchanged it either: `resolveSession` only
+re-exchanged on a missing token or narrowed scopes, never on age or rejection.
 
-**Fixed, but unproven.** The exchange now passes `expiring: true`,
+**Why it was hard to find.** Nothing in this repository says "permanent", and
+the failure surfaces as a bare 403 with no body — which reads as a scopes
+problem. The evidence was in the *Partner dashboard* under Monitoring → API
+health, which reported *"Deprecated offline token use detected"* and stated that
+deprecated tokens *"can't be used to make calls and must be exchanged for new
+offline tokens."* No log this app writes would have told you.
+
+**The fix, and the proof.** The exchange now passes `expiring: true`;
 `shopify/tokenRefresh.ts` migrates an existing permanent token via
 `migrateToExpiringToken` — no reinstall, no merchant interaction — and refreshes
-an expiring one before use. This has only been tested against mocks. To confirm
-it, deploy and open the app: the logs should carry *"Migrated to an expiring
-offline access token"*, and the dashboard should show INR and the store name
-rather than the USD-and-domain fallbacks.
+before use. On deploy the worker logged *"Migrated to an expiring offline access
+token"* for `codkar-th9dk7h6`, and a real COD order followed the same day.
 
-**An earlier theory, now doubted.** This was previously read as Public
-distribution removing the in-development allowance while the protected customer
-data request sat in `Draft`. Two things argue against it: the Partner page still
-states *"You can access your selected data in development without submitting for
-review"*, and the App Store review checklist marks the request **complete**. Not
-impossible — the scopes do include four protected ones — but the token is the
-better explanation and the cheaper thing to rule out. Shopify's own error id
-from the original failure is `62d3e4ef-1e10-496a-8f91-edb7e37022ed-1786074679`.
+**A theory that was wrong, recorded so it is not repeated.** This was first read
+as Public distribution removing the in-development allowance while the protected
+customer data request sat in `Draft`, with the conclusion that nothing in this
+repository could fix it and only a Partner support ticket would help. That was
+wrong on both counts. Two things should have raised doubt earlier: the Partner
+page still stated *"You can access your selected data in development without
+submitting for review"*, and the App Store review checklist marked the request
+**complete**. Shopify's error id from the original failure, for the record, was
+`62d3e4ef-1e10-496a-8f91-edb7e37022ed-1786074679`.
 
 ---
 
@@ -419,19 +428,31 @@ served and ignored. `botProtection` and `minFillSeconds` *are* enforced, via
 
 ### Unverified rather than broken
 
-- **No real COD order has ever been placed through production.** The
-  draft-order mutations have only run against a local worker. This is the
-  highest-risk path in the codebase and it is blocked by the 403.
+**Proven on 8 Aug 2026** — one real COD order, start to finish. It priced
+against Shopify, reached Shopify as a completed order (`draftOrderCreate` +
+`draftOrderComplete` in production, not just a local worker), and synced to
+Google Sheets. Store health reports COD live on the storefront. *One* order is
+not a load test, but the path is no longer hypothetical.
+
+Still genuinely unverified:
+
 - **The order-bump tick boxes and the form logo have never been seen
   rendering.** Both were built without a working storefront to check against.
+  The storefront works now, so this is a five-minute check rather than a blocker.
+- **The token refresh has never been observed.** Migration is proven; the
+  hourly `refreshToken` path that follows it has only run against mocks. Look
+  for *"Refreshed the offline access token"* in the worker log. If it is absent
+  and the app is still working, something is re-exchanging instead — worth
+  understanding, because the worker cannot re-exchange.
 - **The retention sweep has never run against real rows.** Batching, the
   per-shop ceiling and continue-on-failure are covered by tests that mock the
   repository. For a job whose purpose is destroying data, watch it once.
 - **No pixel has ever been configured against a real ad platform.**
-  `POST /pixels/:id/test` is the fastest way to find out.
-- **Google Sheets is configured but unconnected.** The OAuth client exists; the
-  consent screen is in **Testing**, which expires refresh tokens after 7 days.
-  Publish it before depending on the sync.
+  `POST /pixels/:id/test` is the fastest way to find out. The dashboard reports
+  *Ad pixels: not set up* — this is now the largest unproven subsystem.
+- **Google Sheets' consent screen is still in Testing**, which expires refresh
+  tokens after 7 days. The sync works today; it will stop working roughly a week
+  after the grant unless the screen is published.
 - **Managed pricing plans do not exist** in the Partner Dashboard. Display names
   must match `PLAN_CATALOGUE` exactly — `Free`, `Starter`, `Pro`, `Enterprise` —
   at $0 / $9 / $18 / $26, with 3-day trials on Starter and Pro. Nothing in the
@@ -447,48 +468,43 @@ fields, `forceRtl`, `currencyFormat`, `dateFormat`, and `orderRetentionDays`.
 
 ### Real work, ordered by value
 
-1. **Confirm the Admin API is unblocked.** Everything else is downstream. The
-   expiring-token fix is written and green against mocks but has never run
-   against live Shopify — deploy it, open the app, and check for the migration
-   line in the logs. If the 403 survives, the protected customer data theory in
-   [The blocker](#the-blocker) is back on the table.
-2. **Merchant notifications are entirely dead.** `notifyOnNewOrder`,
+1. **Merchant notifications are entirely dead.** `notifyOnNewOrder`,
    `notifyOnHighRisk`, `notifyOnSyncFailure` and `customerEmailEnabled` appear
    nowhere in `apps/api/src` outside tests. `NotificationTemplate` is only
    touched by seeding. The `NOTIFICATION` queue has no processor. `lib/mailer`
    has exactly one caller — the GDPR data-request handler. Templates seeded,
    columns present, mailer working, queue declared, and **no merchant is ever
    emailed about anything**. For a COD app that is the largest functional gap.
-3. **Product eligibility is never enforced at submission.** `resolveEligibility`
+2. **Product eligibility is never enforced at submission.** `resolveEligibility`
    runs only in the storefront config path and returns `true` unconditionally
    when there is no product in view. `orders/service.ts` contains no eligibility
    check at all, so a crafted POST can order an excluded product. The button not
    rendering is the only thing preventing it.
-4. **Fill in the legal pages before submitting to the App Store.** 52 `[PLACEHOLDER]`
+3. **Fill in the legal pages before submitting to the App Store.** 52 `[PLACEHOLDER]`
    occurrences (20 distinct) across four documents, none reviewed by a lawyer.
    `docs/legal/README.md` has the detail. Also: `*controller*` and `*processor*`
    render as literal asterisks on the live privacy policy — the renderer does
    `**bold**` but not `*italic*`, and `markdown.test.ts` misses it.
-5. **`COLLECTION_PAGE` and `HOME_PAGE` are enabled in the customizer and cannot
+4. **`COLLECTION_PAGE` and `HOME_PAGE` are enabled in the customizer and cannot
    render.** `codflow.js` auto-places only `PRODUCT_PAGE` and injects only
    `STICKY_MOBILE` and `FLOATING`; the rest need an app block, and a collection
    page has no product to order. A per-card implementation was built and
    reverted at the owner's request. Either build it properly or remove the
    placements.
-6. **Bulk retry on the Orders screen.** 500 stuck orders is 500 clicks. Bound it
+5. **Bulk retry on the Orders screen.** 500 stuck orders is 500 clicks. Bound it
    per call the way `rescanPending` caps at 200, and enqueue rather than pushing
    inline. Each row also mounts its own `useRetryPush` *and* `useVerifyOrder`.
-7. **Order detail — what the shopper actually typed.** Build it as a detail view
+6. **Order detail — what the shopper actually typed.** Build it as a detail view
    fetched per order, not fields on the list: `StuckOrderSummary` omits personal
    data on purpose, and putting every address into a payload polled every
    fifteen seconds is how a support tool becomes a privacy incident.
    `repository.collectCustomerData` already assembles this shape.
-8. **Fraud detectors have no direct tests** — the engine tests mock
+7. **Fraud detectors have no direct tests** — the engine tests mock
    `runDetectors` wholesale.
-9. **OTP** — model, gates, plan feature and meter exist. Nothing sends a code.
-10. **`codflow.js` is 42 KB against Shopify's 10 KB app-block threshold.**
+8. **OTP** — model, gates, plan feature and meter exist. Nothing sends a code.
+9. **`codflow.js` is 42 KB against Shopify's 10 KB app-block threshold.**
     Logged as an error on every deploy, not blocking. Will matter at review.
-11. **`openInPopup` and `iconName`** are on `ButtonConfig`, honoured by nothing.
+10. **`openInPopup` and `iconName`** are on `ButtonConfig`, honoured by nothing.
 
 ---
 

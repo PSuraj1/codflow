@@ -478,7 +478,7 @@ async function checkRedis(url: string): Promise<void> {
 function report(): number {
   const width = Math.max(...results.map((result) => result.name.length));
 
-  process.stdout.write('\nCodFlow preflight\n\n');
+  process.stdout.write('\nCODkar preflight\n\n');
 
   for (const result of results) {
     const icon = result.status === 'pass' ? ' ok ' : result.status === 'warn' ? 'warn' : 'FAIL';

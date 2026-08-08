@@ -13,7 +13,7 @@
       "retry": "Try again"
     },
     "block": {
-      "design_hint": "CodFlow button — enable the “CodFlow — Cash on Delivery” app embed under Theme settings → App embeds for this to appear on your live store."
+      "design_hint": "CODkar button — enable the “CODkar — Cash on Delivery” app embed under Theme settings → App embeds for this to appear on your live store."
     }
   }
 }

@@ -109,7 +109,7 @@ const EnvSchema = z.object({
   SMTP_SECURE: booleanish.default(false),
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
-  MAIL_FROM_NAME: z.string().default('CodFlow'),
+  MAIL_FROM_NAME: z.string().default('CODkar'),
   MAIL_FROM_ADDRESS: z.email().optional(),
 
   // ---- Optional integrations

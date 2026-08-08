@@ -13,7 +13,7 @@ import {
  * Google Ads conversions.
  *
  * The odd one out. Google's server-side conversion APIs each require something
- * CodFlow cannot reasonably ask a merchant for:
+ * CODkar cannot reasonably ask a merchant for:
  *
  *  - The **Google Ads API** needs OAuth against their ads account plus a
  *    developer token that Google approves per application.

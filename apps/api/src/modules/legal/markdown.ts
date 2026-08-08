@@ -203,7 +203,7 @@ export function renderPage(title: string, body: string): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escape(title)} · CodFlow</title>
+<title>${escape(title)} · CODkar</title>
 <style>
   :root { color-scheme: light dark; }
   body {

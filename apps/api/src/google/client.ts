@@ -9,7 +9,7 @@ const log = createLogger('google-client');
  * Google OAuth.
  *
  * Separate from Shopify's auth in every respect: a different provider, a
- * different consent screen, and a refresh token that CodFlow stores itself
+ * different consent screen, and a refresh token that CODkar stores itself
  * rather than exchanging on demand. That last point is the one that shapes this
  * file — Google issues a refresh token **once**, on the first consent, and
  * never again unless you ask for it explicitly. Losing it means the merchant
@@ -45,7 +45,7 @@ function assertConfigured(): void {
     // it, so an operator who has not set the credentials should not lose
     // everything else.
     throw new ServiceUnavailableError(
-      'Google Sheets is not configured on this CodFlow deployment.',
+      'Google Sheets is not configured on this CODkar deployment.',
     );
   }
 }
@@ -112,7 +112,7 @@ export async function exchangeCode(code: string): Promise<GoogleTokens> {
     // silently dies in an hour, which is far harder to diagnose than a refusal
     // at connect time.
     throw new InternalError(
-      'Google did not return a refresh token. Remove CodFlow from your Google account permissions and connect again.',
+      'Google did not return a refresh token. Remove CODkar from your Google account permissions and connect again.',
     );
   }
 
@@ -192,7 +192,7 @@ export async function refreshAccessToken(
   }
 }
 
-/** Best-effort revocation, so disconnecting in CodFlow also revokes at Google. */
+/** Best-effort revocation, so disconnecting in CODkar also revokes at Google. */
 export async function revokeToken(token: string): Promise<void> {
   try {
     await fetch('https://oauth2.googleapis.com/revoke', {

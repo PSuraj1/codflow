@@ -13,7 +13,7 @@
       "retry": "Réessayer"
     },
     "block": {
-      "design_hint": "Bouton CodFlow — activez « CodFlow — Cash on Delivery » dans Paramètres du thème → Intégrations d'applications pour qu'il apparaisse sur votre boutique."
+      "design_hint": "Bouton CODkar — activez « CODkar — Cash on Delivery » dans Paramètres du thème → Intégrations d'applications pour qu'il apparaisse sur votre boutique."
     }
   }
 }

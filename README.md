@@ -1,4 +1,4 @@
-# CodFlow
+# CODkar
 
 A Cash-On-Delivery app for Shopify: a customizable COD order form that replaces
 Add-to-Cart/Buy-Now, with Google Sheets sync, server-side pixel tracking, a
@@ -171,9 +171,9 @@ the two drift apart:
 | Source | Provides |
 |---|---|
 | Liquid, via the app embed | What Shopify already knows: shop domain, currency, money format, locale, page type, product in view, cart totals. Free — no request, no layout shift. |
-| CodFlow API | What the merchant configured: button labels, colours, placements, COD fees. Fetched once, cached in `sessionStorage`. |
+| CODkar API | What the merchant configured: button labels, colours, placements, COD fees. Fetched once, cached in `sessionStorage`. |
 
-Button appearance lives **only** in the CodFlow admin. The theme editor decides
+Button appearance lives **only** in the CODkar admin. The theme editor decides
 *where* a button goes and how it spaces against the surrounding section — never
 what it looks like — so a merchant has one place to restyle every placement.
 
@@ -265,7 +265,7 @@ with every other app on their store.
 
 ### Reaching Shopify
 
-The shopper's receipt is the CodFlow reference, issued synchronously. The
+The shopper's receipt is the CODkar reference, issued synchronously. The
 Shopify order arrives moments later, written by the worker — a shopper should
 not watch a spinner while the app negotiates with an API they have no
 relationship with, and a push that fails deserves retries with backoff, which
@@ -333,7 +333,7 @@ dispatcher checks `alreadyDispatched` per pixel, and the provider dedupes on
 ### Normalization is the whole feature
 
 Advanced matching hashes personal details with SHA-256 so a platform can
-recognise someone it already knows without CodFlow handing over a phone number.
+recognise someone it already knows without CODkar handing over a phone number.
 
 A normalization bug does not throw. It produces a valid hash that matches
 nobody, and match quality sits at zero with nothing in any log to explain it.

@@ -1,4 +1,4 @@
-# Deploying CodFlow
+# Deploying CODkar
 
 Everything needed to take this from a repository to a Shopify app merchants can
 install. [HANDOFF.md](HANDOFF.md) says where the code is; this says how to run
@@ -145,7 +145,7 @@ What to walk through, in the order things break:
 1. **Install** — the dashboard should render with the store name and a `FREE`
    badge. A blank iframe means `APP_URL` and `application_url` disagree.
 2. **App embed** — Online Store → Themes → Customize → App embeds → enable
-   CodFlow, then place the COD button block on a product template.
+   CODkar, then place the COD button block on a product template.
 3. **One COD order.** The highest-risk path in the codebase: the draft-order
    mutation shapes have never run against a live store. If the push fails,
    `cod_orders.pushError` holds Shopify's own message, the worker logs the full
@@ -298,7 +298,7 @@ pressure.
    one path that has never been exercised against a live store — the draft-order
    mutation shapes are unverified, and the first real order will confirm or
    break them.
-4. Check the worker logs for `CodFlow worker started` and a processed job.
+4. Check the worker logs for `CODkar worker started` and a processed job.
 
 ---
 
@@ -446,7 +446,7 @@ Build the extension before deploying: the bundles in `assets/` are committed and
 
 Partner Dashboard -> Distribution -> **Public distribution**, then use the
 install link on `dealzy-9cthr0cs.myshopify.com`. Then Online Store -> Themes ->
-Customize -> App embeds -> enable CodFlow.
+Customize -> App embeds -> enable CODkar.
 
 ### 8. Prove it before pointing customers at it
 

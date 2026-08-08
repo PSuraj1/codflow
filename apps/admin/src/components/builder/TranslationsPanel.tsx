@@ -79,7 +79,7 @@ export function TranslationsPanel({
           </Text>
           <Banner tone="info">
             <p>
-              Your store publishes one language, so there is nothing to translate. CodFlow follows
+              Your store publishes one language, so there is nothing to translate. CODkar follows
               the languages you publish in Shopify — add one there and it appears here.
             </p>
           </Banner>

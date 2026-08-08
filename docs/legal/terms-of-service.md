@@ -1,6 +1,6 @@
 # Terms of Service
 
-**CodFlow — Cash on Delivery for Shopify**
+**CODkar — Cash on Delivery for Shopify**
 
 Last updated: [DATE]
 Provided by: [COMPANY LEGAL NAME], [REGISTERED ADDRESS]
@@ -14,7 +14,7 @@ Contact: [SUPPORT EMAIL]
 
 ## 1. Who these terms are between
 
-These terms govern your use of CodFlow ("the app"), provided by [COMPANY LEGAL
+These terms govern your use of CODkar ("the app"), provided by [COMPANY LEGAL
 NAME] ("we", "us"). "You" means the merchant who installs the app on a Shopify
 store, and you confirm you are authorised to act for that store.
 
@@ -22,7 +22,7 @@ Installing the app means you accept these terms.
 
 ## 2. What the app does
 
-CodFlow adds a cash-on-delivery ordering flow to a Shopify store. A shopper
+CODkar adds a cash-on-delivery ordering flow to a Shopify store. A shopper
 completes a form; the app validates it, scores it for fraud risk, and creates a
 corresponding order in your Shopify store. It can also export orders to Google
 Sheets and report conversions to advertising platforms.
@@ -51,7 +51,7 @@ Sheets and report conversions to advertising platforms.
 ## 5. What the app does not do
 
 **Cash on delivery is not a payment method we operate.** No money passes through
-CodFlow. The app records an order and marks it as payable on delivery; the
+CODkar. The app records an order and marks it as payable on delivery; the
 collection of cash, the courier relationship, and any loss from a refused
 delivery are entirely yours.
 

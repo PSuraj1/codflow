@@ -1,9 +1,9 @@
 # Data Processing Addendum
 
-**CodFlow — Cash on Delivery for Shopify**
+**CODkar — Cash on Delivery for Shopify**
 
 Last updated: [DATE]
-Between: [COMPANY LEGAL NAME] ("Processor") and the merchant installing CodFlow ("Controller")
+Between: [COMPANY LEGAL NAME] ("Processor") and the merchant installing CODkar ("Controller")
 
 > **Draft, not legally reviewed.** Shopify's protected customer data
 > requirements oblige app developers to "establish formal privacy and data

@@ -1,5 +1,5 @@
 {% comment %}
-  CodFlow — COD button app block.
+  CODkar — COD button app block.
 
   The merchant drags this into a product, cart or collection template in the
   theme editor. Unlike the sticky and floating buttons — which the runtime has
@@ -8,15 +8,15 @@
   fragile selector matching.
 
   The block renders a *placeholder*, not the finished button. Appearance comes
-  from the merchant's CodFlow admin settings, which arrive with the config
+  from the merchant's CODkar admin settings, which arrive with the config
   fetch, so painting a button here with hardcoded styling would produce a
   visible restyle a moment later. Instead the placeholder reserves the right
   amount of vertical space and the runtime fills it in, which keeps Cumulative
   Layout Shift at zero either way.
 
   The settings below are all *theme-level*: spacing and alignment depend on the
-  surrounding section, not on CodFlow. Labels and colours are deliberately
-  absent — they live in the CodFlow admin, which is the single source of truth
+  surrounding section, not on CODkar. Labels and colours are deliberately
+  absent — they live in the CODkar admin, which is the single source of truth
   for how the button looks across every placement.
 {% endcomment %}
 

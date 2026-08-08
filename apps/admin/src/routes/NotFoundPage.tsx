@@ -9,12 +9,12 @@ export function NotFoundPage() {
     <Page>
       <EmptyState
         heading="Page not found"
-        action={{ content: 'Back to CodFlow', onAction: () => navigate('/') }}
+        action={{ content: 'Back to CODkar', onAction: () => navigate('/') }}
         // Shopify's own illustration CDN, so the app ships no image assets of
         // its own for an error state most merchants will never see.
         image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
       >
-        <p>The page you are looking for is not part of CodFlow.</p>
+        <p>The page you are looking for is not part of CODkar.</p>
       </EmptyState>
     </Page>
   );

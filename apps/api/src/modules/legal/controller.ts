@@ -97,5 +97,5 @@ export function index(_req: Request, res: Response): void {
     .join('');
 
   res.type('html');
-  res.send(renderPage('Legal', `<h1>CodFlow</h1><ul>${links}</ul>`));
+  res.send(renderPage('Legal', `<h1>CODkar</h1><ul>${links}</ul>`));
 }

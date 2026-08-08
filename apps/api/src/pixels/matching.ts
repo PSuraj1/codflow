@@ -8,7 +8,7 @@ import { createHash } from 'node:crypto';
  *
  *  - **Nothing identifying leaves the server in the clear.** A hash is one-way,
  *    so the provider learns whether it already knows this person without
- *    CodFlow handing over a shopper's phone number.
+ *    CODkar handing over a shopper's phone number.
  *  - **Normalization is the entire feature.** The hash of `"Asha@Example.com "`
  *    and `"asha@example.com"` are different strings, and a provider comparing
  *    them finds nothing. A normalization bug does not error — it produces a

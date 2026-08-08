@@ -22,12 +22,12 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   if (isPending) {
     return (
-      <Page title="CodFlow">
+      <Page title="CODkar">
         <Layout>
           <Layout.Section>
             <Card>
               <BlockStack gap="400" inlineAlign="center">
-                <Spinner accessibilityLabel="Loading CodFlow" size="large" />
+                <Spinner accessibilityLabel="Loading CODkar" size="large" />
                 <SkeletonBodyText lines={3} />
               </BlockStack>
             </Card>
@@ -41,10 +41,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     const apiError = error instanceof ApiError ? error : null;
 
     return (
-      <Page title="CodFlow">
+      <Page title="CODkar">
         <Banner
           tone="critical"
-          title="CodFlow could not start"
+          title="CODkar could not start"
           action={{ content: 'Try again', onAction: () => void refetch() }}
         >
           <p>{apiError?.body.message ?? error.message}</p>
@@ -72,7 +72,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       */}
       <ui-nav-menu>
         <a href="/" rel="home">
-          CodFlow
+          CODkar
         </a>
         <a href="/analytics">Analytics</a>
         <a href="/forms">COD forms</a>
@@ -91,7 +91,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {!session.scopes.satisfied ? (
         <Banner
           tone="warning"
-          title="CodFlow needs additional permissions"
+          title="CODkar needs additional permissions"
           action={{
             content: 'Update permissions',
             onAction: () =>

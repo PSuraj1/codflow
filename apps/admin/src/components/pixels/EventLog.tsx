@@ -42,7 +42,7 @@ export function EventLog() {
             Recent activity
           </Text>
           <Text as="p" variant="bodySm" tone="subdued">
-            The last events CodFlow sent, from both the browser and the server. Refreshes on its
+            The last events CODkar sent, from both the browser and the server. Refreshes on its
             own while this page is open.
           </Text>
         </BlockStack>

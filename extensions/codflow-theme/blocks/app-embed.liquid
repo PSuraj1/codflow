@@ -1,5 +1,5 @@
 {% comment %}
-  CodFlow — app embed block.
+  CODkar — app embed block.
 
   Runs on every storefront page once the merchant switches it on under
   Theme editor -> App embeds. Its job is to publish *page context* that the
@@ -12,12 +12,12 @@
                            locale, page type, the product in view, cart totals.
                            Free — no network request, no layout shift.
 
-    API (codflow.js)    -> the merchant's CodFlow configuration: button labels,
+    API (codflow.js)    -> the merchant's CODkar configuration: button labels,
                            colours, placements, COD fees. Fetched once and kept
                            in sessionStorage for the rest of the visit.
 
   Anything Shopify can tell us belongs above. Anything the merchant configures
-  in the CodFlow admin belongs below. Duplicating a value across both is how the
+  in the CODkar admin belongs below. Duplicating a value across both is how the
   two drift apart.
 
   Assets are declared in the schema rather than written as <script> tags:

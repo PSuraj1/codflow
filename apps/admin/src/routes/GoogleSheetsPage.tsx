@@ -67,7 +67,7 @@ export function GoogleSheetsPage() {
   const [openedManually, setOpenedManually] = useState(false);
   const [columns, setColumns] = useState<MappedColumn[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState('CodFlow Orders');
+  const [newTitle, setNewTitle] = useState('CODkar Orders');
   const [pickerId, setPickerId] = useState<string | null>(null);
 
   const account = data?.account ?? null;
@@ -235,7 +235,7 @@ export function GoogleSheetsPage() {
                   </InlineStack>
 
                   <Text as="p" variant="bodySm" tone="subdued">
-                    CodFlow can only see spreadsheets it created, plus any you pick yourself. It has
+                    CODkar can only see spreadsheets it created, plus any you pick yourself. It has
                     no access to the rest of your Google Drive.
                   </Text>
 
@@ -358,7 +358,7 @@ export function GoogleSheetsPage() {
                     </InlineStack>
                   ) : (
                     <Text as="p" variant="bodySm" tone="subdued">
-                      No spreadsheets available yet. CodFlow can only see files it created, so
+                      No spreadsheets available yet. CODkar can only see files it created, so
                       create one above to get started.
                     </Text>
                   )}

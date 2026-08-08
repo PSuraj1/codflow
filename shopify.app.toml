@@ -1,4 +1,4 @@
-# CodFlow — Shopify app configuration
+# CODkar — Shopify app configuration
 # Docs: https://shopify.dev/docs/apps/tools/cli/configuration
 #
 # `client_id` is populated by `shopify app config link`. Do not hand-edit it.
@@ -6,7 +6,7 @@
 # file and grants them at install time. Changing scopes requires `shopify app deploy`
 # and triggers a merchant re-consent prompt.
 
-name = "codflow"
+name = "CODkar"
 handle = "codflow-codkar"
 client_id = "359bf08a92b05ac7053cb08e645045d3"
 application_url = "https://app.codflow.in"

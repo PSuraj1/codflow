@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**CodFlow — Cash on Delivery for Shopify**
+**CODkar — Cash on Delivery for Shopify**
 
 Last updated: [DATE]
 Published by: [COMPANY LEGAL NAME], [REGISTERED ADDRESS]
@@ -13,13 +13,13 @@ Contact: [PRIVACY CONTACT EMAIL]
 
 ## Who this covers
 
-CodFlow is an application that merchants install on their Shopify store. It
+CODkar is an application that merchants install on their Shopify store. It
 lets a shopper place a cash-on-delivery order through a form rather than through
 Shopify's checkout.
 
 There are two relationships here, and they are legally different:
 
-- **Merchants** who install CodFlow. We are the *controller* of the account and
+- **Merchants** who install CODkar. We are the *controller* of the account and
   billing information we hold about them.
 - **Shoppers** who submit a cash-on-delivery order on a merchant's store. The
   merchant is the *controller* of that data. We are a *processor* acting on the
@@ -52,7 +52,7 @@ We also record, for fraud prevention and for no other purpose:
   same place without storing a second copy of the address
 
 We do **not** collect payment card details. Cash on delivery involves no card,
-and CodFlow has no payment credentials of any kind.
+and CODkar has no payment credentials of any kind.
 
 ## What we collect from merchants
 
@@ -80,7 +80,7 @@ our own purposes, do not sell it, and do not use it to train models.
 
 ## Automated decision-making
 
-CodFlow scores every cash-on-delivery order for fraud risk. A merchant chooses
+CODkar scores every cash-on-delivery order for fraud risk. A merchant chooses
 what happens at each score: allow, hold for their review, require phone
 verification, or refuse the order.
 
@@ -181,12 +181,12 @@ Merchants may contact us directly at [PRIVACY CONTACT EMAIL].
 
 ## Cookies and tracking
 
-CodFlow itself sets no advertising cookies. It stores a short-lived record in
+CODkar itself sets no advertising cookies. It stores a short-lived record in
 the shopper's browser so a partly-filled form is not lost on reload.
 
 Where a merchant has configured an advertising pixel, that platform's own script
 may set cookies. Merchants can require cookie consent before any pixel fires,
-and CodFlow honours that setting.
+and CODkar honours that setting.
 
 ## Changes
 

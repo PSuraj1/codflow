@@ -1,5 +1,5 @@
 /**
- * CodFlow — client-side pixel firing.
+ * CODkar — client-side pixel firing.
  *
  * Bundled by `build.mjs` into `assets/codflow-pixels.js` and loaded by
  * `codflow.js` only when the merchant has at least one pixel configured. A shop
@@ -516,7 +516,7 @@ function log(message: string, detail?: unknown): void {
   // merchant's theme developer.
   if (!state?.context.page.designMode) return;
   /* eslint-disable-next-line no-console */
-  console.info('[CodFlow pixels] ' + message, detail === undefined ? '' : detail);
+  console.info('[CODkar pixels] ' + message, detail === undefined ? '' : detail);
 }
 
 /**

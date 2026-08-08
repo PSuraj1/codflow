@@ -32,7 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
     // Console rather than a logging service: shipping merchant-side telemetry
     // to a third party is a privacy decision the app has not made, and Shopify
     // reviewers ask about any such call.
-    console.error('CodFlow admin crashed', error, info.componentStack);
+    console.error('CODkar admin crashed', error, info.componentStack);
   }
 
   override render(): ReactNode {
@@ -41,7 +41,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (!error) return this.props.children;
 
     return (
-      <Page title="CodFlow">
+      <Page title="CODkar">
         <Card>
           <BlockStack gap="400">
             <Banner tone="critical" title="Something went wrong">

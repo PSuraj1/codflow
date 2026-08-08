@@ -158,7 +158,7 @@ async function start(): Promise<void> {
       env: config.env,
       ...(migrated > 0 ? { migratedTokens: migrated } : {}),
     },
-    'CodFlow worker started',
+    'CODkar worker started',
   );
 }
 
@@ -213,6 +213,6 @@ process.on('uncaughtException', (error: Error) => {
 });
 
 start().catch((error: unknown) => {
-  logger.fatal({ err: toError(error) }, 'Failed to start the CodFlow worker');
+  logger.fatal({ err: toError(error) }, 'Failed to start the CODkar worker');
   process.exit(1);
 });

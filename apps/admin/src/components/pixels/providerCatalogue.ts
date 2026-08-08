@@ -111,7 +111,7 @@ export const PROVIDER_CATALOGUE: Record<PixelProvider, ProviderCopy> = {
     namePlaceholder: 'My server',
     idLabel: 'Destination URL',
     idPlaceholder: 'https://example.com/events',
-    idHelp: 'Must be https. Requests are signed so you can verify they came from CodFlow.',
+    idHelp: 'Must be https. Requests are signed so you can verify they came from CODkar.',
     whereToFind: 'Your own server',
     needsAccessToken: false,
     supportsTestEventCode: false,

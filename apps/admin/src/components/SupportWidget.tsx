@@ -58,7 +58,7 @@ export function SupportWidget() {
       <button
         type="button"
         onClick={() => openExternal(TELEGRAM_URL)}
-        aria-label="Contact CodFlow support on Telegram"
+        aria-label="Contact CODkar support on Telegram"
         title="Support on Telegram"
         style={{
           display: 'flex',

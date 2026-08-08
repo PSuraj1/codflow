@@ -2,7 +2,7 @@
   "name": "codflow",
   "version": "1.0.0",
   "private": true,
-  "description": "CodFlow \u2014 Cash On Delivery app for Shopify",
+  "description": "CODkar \u2014 Cash On Delivery app for Shopify",
   "license": "UNLICENSED",
   "engines": {
     "node": ">=20.19"

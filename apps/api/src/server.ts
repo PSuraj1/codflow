@@ -63,7 +63,7 @@ async function start(): Promise<void> {
         appUrl: config.server.appUrl,
         apiVersion: API_VERSION,
       },
-      'CodFlow API listening',
+      'CODkar API listening',
     );
   });
 
@@ -135,6 +135,6 @@ process.on('uncaughtException', (error: Error) => {
 });
 
 start().catch((error: unknown) => {
-  logger.fatal({ err: toError(error) }, 'Failed to start CodFlow API');
+  logger.fatal({ err: toError(error) }, 'Failed to start CODkar API');
   process.exit(1);
 });

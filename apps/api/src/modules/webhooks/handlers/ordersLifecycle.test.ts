@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 /**
  * Order lifecycle webhooks.
  *
- * These handlers write the half of the dashboard CodFlow cannot observe on its
+ * These handlers write the half of the dashboard CODkar cannot observe on its
  * own — what happened to an order after Shopify had it. Three properties are
  * load-bearing:
  *
@@ -80,7 +80,7 @@ beforeEach(() => {
 });
 
 describe('locating the order', () => {
-  it('ignores an order CodFlow did not create', async () => {
+  it('ignores an order CODkar did not create', async () => {
     await ordersCancelled(context({ id: 99, cancelled_at: '2026-03-04T10:00:00Z' }));
 
     expect(updateStatus).not.toHaveBeenCalled();

@@ -97,7 +97,7 @@ export async function importSettings(
 ): Promise<SettingsImportResult> {
   if (input.version !== SETTINGS_EXPORT_VERSION) {
     throw new ValidationError(
-      `This file was made by a different version of CodFlow (v${input.version}). ` +
+      `This file was made by a different version of CODkar (v${input.version}). ` +
         `This version reads v${SETTINGS_EXPORT_VERSION}.`,
     );
   }

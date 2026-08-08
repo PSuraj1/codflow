@@ -4,7 +4,7 @@ import { getSessionToken, openTop } from './appBridge';
 /**
  * The admin's HTTP client.
  *
- * Every call to the CodFlow API goes through here, because three behaviours
+ * Every call to the CODkar API goes through here, because three behaviours
  * have to be applied to all of them and none of them belong in a component:
  *
  *  1. **A fresh session token per request.** App Bridge tokens expire in about

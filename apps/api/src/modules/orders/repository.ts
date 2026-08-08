@@ -147,9 +147,9 @@ export function findById(id: string): Promise<CodOrder | null> {
 }
 
 /**
- * The COD order behind a Shopify order, if CodFlow created it.
+ * The COD order behind a Shopify order, if CODkar created it.
  *
- * How every order webhook finds its way back to a CodFlow record. A null here
+ * How every order webhook finds its way back to a CODkar record. A null here
  * is ordinary traffic, not an error: the merchant's other orders — from their
  * normal checkout, from a POS, from another app — all deliver the same
  * webhooks, and none of them are ours to act on.

@@ -143,7 +143,7 @@ export function OrdersPage() {
                 <BlockStack gap="200">
                   <p>
                     Some orders have been confirmed for a while and have never been attempted, which
-                    usually means the CodFlow background worker is not running. Until it is, orders
+                    usually means the CODkar background worker is not running. Until it is, orders
                     stay here and never reach Shopify, Google Sheets or your ad pixels.
                   </p>
                   <p>

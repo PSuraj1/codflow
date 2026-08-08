@@ -1,5 +1,5 @@
 # =============================================================================
-# CodFlow — continuous integration.
+# CODkar — continuous integration.
 #
 # Runs the same three commands a developer runs locally, in the same order, and
 # nothing else. That symmetry is the point: a CI pipeline that checks something

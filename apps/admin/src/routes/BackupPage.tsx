@@ -60,14 +60,14 @@ export function BackupPage() {
 
       if (typeof body.version !== 'number') {
         setParsed(null);
-        setProblem('That file is not a CodFlow settings export.');
+        setProblem('That file is not a CODkar settings export.');
         return;
       }
 
       if (body.version !== SETTINGS_EXPORT_VERSION) {
         setParsed(null);
         setProblem(
-          `That file was made by a different version of CodFlow (v${String(body.version)}). ` +
+          `That file was made by a different version of CODkar (v${String(body.version)}). ` +
             `This version reads v${SETTINGS_EXPORT_VERSION}.`,
         );
         return;

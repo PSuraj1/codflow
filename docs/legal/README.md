@@ -32,7 +32,7 @@ needs a real answer, not a guess.
 
 ## Compliance gaps in the product, not the paperwork
 
-CodFlow accesses name, address, phone and email, which puts it at **Level 2** of
+CODkar accesses name, address, phone and email, which puts it at **Level 2** of
 Shopify's protected customer data requirements. Two obligations used to be unmet
 by the code, which made the corresponding paragraphs of the privacy policy
 untrue. Both are now implemented:

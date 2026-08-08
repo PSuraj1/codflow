@@ -4,7 +4,7 @@ import { PLAN_LIMITS, type UsageMetric } from '../constants.js';
 /**
  * The billing contract.
  *
- * CodFlow uses **Shopify managed pricing**: the plans, their prices and their
+ * CODkar uses **Shopify managed pricing**: the plans, their prices and their
  * trials are configured in the Partner Dashboard, and Shopify runs the entire
  * purchase flow. The app never creates a charge, never sees a card, and never
  * needs the Billing API's `appSubscriptionCreate`.
@@ -15,7 +15,7 @@ import { PLAN_LIMITS, type UsageMetric } from '../constants.js';
  *   Shopify owns  — the price, the currency, the trial, the proration, the
  *                   invoice, the merchant's confirmation screen, and the
  *                   authoritative answer to "what are they on right now".
- *   CodFlow owns  — enforcement. Which features a plan unlocks, what the
+ *   CODkar owns  — enforcement. Which features a plan unlocks, what the
  *                   monthly caps are, and what happens at the cap.
  *
  * The consequence is that `Subscription` in this app is a **cache**, not a

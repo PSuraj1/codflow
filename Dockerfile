@@ -1,5 +1,5 @@
 ﻿# =============================================================================
-# CodFlow — production image
+# CODkar — production image
 #
 # Debian slim rather than Alpine on purpose: Prisma 6 ships prebuilt query
 # engines against glibc/OpenSSL 3. On Alpine (musl) you must pin

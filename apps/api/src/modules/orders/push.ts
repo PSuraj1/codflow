@@ -33,7 +33,7 @@ const log = createLogger('order-push');
  * And a push that fails deserves retries with backoff — which is not something
  * you can offer inside a request that has already returned.
  *
- * The shopper's receipt is the CodFlow reference, issued synchronously. The
+ * The shopper's receipt is the CODkar reference, issued synchronously. The
  * Shopify order number appears moments later and is what the merchant works
  * from.
  */
@@ -74,7 +74,7 @@ async function loadPushSettings(shopId: string) {
  * The array on the order is the *resolved* one written at submission — the
  * prices in it came from Shopify, not from the browser. Catalogue lines are
  * sent by `variantId` so Shopify re-derives the current price itself; only the
- * fee lines carry an explicit amount, because they are CodFlow's own charges
+ * fee lines carry an explicit amount, because they are CODkar's own charges
  * and Shopify has no record of them.
  */
 function toShopifyLineItems(
@@ -167,13 +167,13 @@ function toAddress(order: CodOrder): MailingAddressInput | undefined {
  * Custom fields, carried onto the Shopify order as attributes.
  *
  * This is how a merchant sees the answers to the questions they added in the
- * form builder. Without it those values live only in CodFlow, and the person
+ * form builder. Without it those values live only in CODkar, and the person
  * packing the box — who works from the Shopify order — never sees the delivery
  * instructions the customer wrote.
  */
 function toCustomAttributes(order: CodOrder): Array<{ key: string; value: string }> {
   const attributes: Array<{ key: string; value: string }> = [
-    { key: 'CodFlow reference', value: order.reference },
+    { key: 'CODkar reference', value: order.reference },
   ];
 
   const custom =
@@ -384,7 +384,7 @@ async function createDraft(
     ...(order.email ? { email: order.email } : {}),
     ...(order.phoneE164 ? { phone: order.phoneE164 } : {}),
     note: [
-      `CodFlow reference: ${order.reference}`,
+      `CODkar reference: ${order.reference}`,
       order.orderNotes ? `Customer note: ${order.orderNotes}` : null,
     ]
       .filter(Boolean)
@@ -461,7 +461,7 @@ async function applyTags(
   defaultTags: string[],
   order: CodOrder,
 ): Promise<void> {
-  const tags = [...new Set([...defaultTags, `CodFlow-${order.reference}`])].filter(Boolean);
+  const tags = [...new Set([...defaultTags, `CODkar-${order.reference}`])].filter(Boolean);
 
   if (tags.length === 0) return;
 

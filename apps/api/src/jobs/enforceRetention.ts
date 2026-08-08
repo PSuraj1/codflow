@@ -13,7 +13,7 @@ type RetentionJob = JobPayloads[typeof QueueName.DATA_RETENTION];
  * Data retention.
  *
  * Shopify's protected customer data rules require that personal data is not
- * kept longer than it is needed, and until this existed CodFlow kept a
+ * kept longer than it is needed, and until this existed CODkar kept a
  * shopper's name, phone and address for as long as the merchant stayed
  * installed. A privacy policy claiming a retention limit while nothing enforced
  * one would have been worse than having no policy: an untrue one.

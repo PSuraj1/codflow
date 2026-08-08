@@ -54,7 +54,7 @@ export async function overview(shopId: string): Promise<SheetsOverview> {
 /**
  * Spreadsheets the app can see.
  *
- * Under the `drive.file` scope this is only files CodFlow created plus any the
+ * Under the `drive.file` scope this is only files CODkar created plus any the
  * merchant explicitly shared — never their whole Drive. The admin says so,
  * because a merchant who owns forty spreadsheets and sees two will otherwise
  * assume the integration is broken.
@@ -209,7 +209,7 @@ export async function updateMapping(
       }
     } else if (!sheetFieldSource(column.source)) {
       throw new ValidationError('Unknown field', {
-        details: { [`columns.${index}.source`]: [`"${column.source}" is not a field CodFlow can export`] },
+        details: { [`columns.${index}.source`]: [`"${column.source}" is not a field CODkar can export`] },
       });
     }
 

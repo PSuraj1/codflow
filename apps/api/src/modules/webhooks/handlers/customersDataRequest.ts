@@ -69,7 +69,7 @@ export const customersDataRequest: WebhookHandler = async (context) => {
 
   const export_ = {
     generatedAt: new Date().toISOString(),
-    app: 'CodFlow',
+    app: 'CODkar',
     shopDomain: context.shopDomain,
     shopifyCustomerId: customerId,
     requestedVia: 'Shopify customers/data_request',
@@ -78,10 +78,10 @@ export const customersDataRequest: WebhookHandler = async (context) => {
 
   const sent = await mailer.send({
     to: recipient,
-    subject: `[CodFlow] Customer data request — ${orders.length} record(s)`,
+    subject: `[CODkar] Customer data request — ${orders.length} record(s)`,
     text:
       `Shopify forwarded a customer data request for your store ${context.shopDomain}.\n\n` +
-      `CodFlow holds ${orders.length} cash-on-delivery order(s) for this customer. ` +
+      `CODkar holds ${orders.length} cash-on-delivery order(s) for this customer. ` +
       `The full export is attached as JSON.\n\n` +
       `You have 30 days from the request date to provide this to the customer.\n\n` +
       `Shopify customer id: ${customerId ?? 'not supplied'}\n` +

@@ -52,7 +52,7 @@ export const SelectSheetSchema = z.object({
 export type SelectSheetInput = z.infer<typeof SelectSheetSchema>;
 
 export const CreateSheetSchema = z.object({
-  title: z.string().min(1).max(120).default('CodFlow Orders'),
+  title: z.string().min(1).max(120).default('CODkar Orders'),
   worksheetName: z.string().min(1).max(100).default('Orders'),
 });
 

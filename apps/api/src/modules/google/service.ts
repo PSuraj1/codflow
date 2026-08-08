@@ -21,7 +21,7 @@ const log = createLogger('google-service');
  * The part worth reading closely is the OAuth `state`. Google's callback
  * arrives at a public endpoint with no session — the merchant's browser is
  * coming back from accounts.google.com, not from the embedded app — so the only
- * thing tying the response to a shop is what CodFlow put in `state` on the way
+ * thing tying the response to a shop is what CODkar put in `state` on the way
  * out. If that were just the shop domain, anyone could complete the flow and
  * attach *their* Google account to *someone else's* shop, and every subsequent
  * COD order would be written into a spreadsheet they control.
@@ -129,7 +129,7 @@ export async function disconnect(shopId: string): Promise<void> {
   if (!account) throw new NotFoundError('No Google account is connected');
 
   // Revoked at Google first, so a merchant who disconnects genuinely loses the
-  // grant rather than merely losing CodFlow's copy of it. Best-effort: the
+  // grant rather than merely losing CODkar's copy of it. Best-effort: the
   // local record is removed either way.
   try {
     const tokens = repository.decryptTokens(account);

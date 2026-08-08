@@ -67,7 +67,7 @@ function readMapping(config: SheetConfig): SheetColumnMapping[] {
  * Writes the header row if the sheet does not already have one.
  *
  * Checked by reading rather than by trusting a flag, because the merchant owns
- * the spreadsheet — they can clear it, delete the tab, or point CodFlow at a
+ * the spreadsheet — they can clear it, delete the tab, or point CODkar at a
  * sheet somebody else set up. A stored "headers written" boolean would be wrong
  * the moment they do, and every subsequent row would land under no headings.
  */

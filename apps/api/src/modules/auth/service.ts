@@ -19,7 +19,7 @@ const log = createLogger('auth-service');
 /**
  * Authentication for embedded admin traffic.
  *
- * CodFlow uses **managed installation with token exchange**, which is the only
+ * CODkar uses **managed installation with token exchange**, which is the only
  * flow Shopify supports for new embedded apps. The important consequence is
  * that this app never runs an authorization-code grant: it does not generate a
  * `state` nonce, does not host a redirect handler that swaps a code for a

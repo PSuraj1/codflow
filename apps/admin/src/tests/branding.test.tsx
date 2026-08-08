@@ -9,7 +9,7 @@ import { FormAppearancePreview } from '../components/branding/FormAppearancePrev
  *
  * Every one of these values has been honoured by the storefront since the form
  * was built, and no admin screen could set any of them — so every shop rendered
- * CodFlow's default green whatever their own brand was.
+ * CODkar's default green whatever their own brand was.
  *
  * The preview is what a merchant judges the change by, so what matters is that
  * it uses the values verbatim rather than approximating them.

@@ -156,7 +156,7 @@ export async function dispatch(
   if (!SERVER_SIDE_EVENTS.includes(eventName)) {
     // Page views and searches are browser-only by nature. Claiming to send them
     // from the server would be a lie.
-    log.warn({ eventName }, 'Event is not one CodFlow can observe server-side');
+    log.warn({ eventName }, 'Event is not one CODkar can observe server-side');
     return { sent: 0, failed: 0, skipped: 0, shouldRetry: false };
   }
 

@@ -102,7 +102,7 @@ export function PixelsPage() {
             <Banner tone="info">
               <p>
                 A COD order is confirmed after the shopper has closed the tab, so the sale can only
-                be reported from CodFlow&rsquo;s server. Browser tracking alone will under-report
+                be reported from CODkar&rsquo;s server. Browser tracking alone will under-report
                 your conversions.
               </p>
             </Banner>
@@ -140,7 +140,7 @@ export function PixelsPage() {
                   action={{ content: 'Add your first pixel', onAction: () => openForm(null) }}
                 >
                   <p>
-                    Connect Meta, Google Ads, TikTok, Snapchat or Pinterest and CodFlow will report
+                    Connect Meta, Google Ads, TikTok, Snapchat or Pinterest and CODkar will report
                     every COD order as a conversion.
                   </p>
                 </EmptyState>

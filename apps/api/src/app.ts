@@ -121,7 +121,7 @@ function mountAdmin(app: Express): void {
         .status(200)
         .type('text/plain')
         .send(
-          'CodFlow API is running.\n\n' +
+          'CODkar API is running.\n\n' +
             'The embedded admin is served by Vite in development — open the app ' +
             'from your Shopify admin, or run `npm run dev` at the repository root.\n',
         );

@@ -7,7 +7,7 @@ import type { CodOrderStatus, RiskAction } from '../enums.js';
  * Scoped to push recovery, matching the endpoints that exist: full order
  * management is its own phase. This is the subset a merchant needs the day an
  * order does not reach Shopify — which is the one order problem they cannot
- * work around themselves, because the order is in CodFlow, the customer is
+ * work around themselves, because the order is in CODkar, the customer is
  * expecting delivery, and the alternative is rekeying it by hand.
  *
  * Note what is absent: no name, no phone, no address. A recovery list is about

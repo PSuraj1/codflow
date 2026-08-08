@@ -9,7 +9,7 @@ const log = createLogger('webhook:orders');
 /**
  * Order lifecycle webhooks — what happens to a COD order after Shopify has it.
  *
- * These are the events CodFlow cannot observe on its own. Once an order is
+ * These are the events CODkar cannot observe on its own. Once an order is
  * pushed, everything that follows happens in Shopify's admin: the merchant
  * cancels it, a courier delivers it, a refund is issued. Without these handlers
  * the dashboard could only ever report orders *taken*, which for cash on
@@ -70,7 +70,7 @@ function timestamp(payload: Record<string, unknown>, key: string, fallback: Date
 /**
  * Finds the COD order a delivery refers to.
  *
- * Returns null — quietly — for anything CodFlow did not create.
+ * Returns null — quietly — for anything CODkar did not create.
  */
 async function locate(
   context: WebhookHandlerContext,
@@ -102,7 +102,7 @@ export const ordersCreate: WebhookHandler = async (context) => {
 
   log.debug(
     { reference: order.reference, orderNumber: name },
-    'Shopify confirmed a CodFlow order — already counted at submission',
+    'Shopify confirmed a CODkar order — already counted at submission',
   );
 };
 
@@ -250,7 +250,7 @@ function refundAmount(payload: Record<string, unknown>): Prisma.Decimal | null {
 /**
  * `orders/updated` — the catch-all.
  *
- * Shopify fires this for everything, most of which CodFlow has no opinion
+ * Shopify fires this for everything, most of which CODkar has no opinion
  * about. It exists here to reconcile the two transitions that can arrive
  * *only* this way: an order cancelled through an API that does not emit
  * `orders/cancelled`, and a fulfilment status that changed without a

@@ -234,7 +234,7 @@ export async function sendTestEvent(
     value: 100,
     currency: shop?.currencyCode ?? 'USD',
     orderReference: 'CF-TESTTEST',
-    contents: [{ id: 'codflow-test-product', quantity: 1, price: 100, title: 'CodFlow test product' }],
+    contents: [{ id: 'codflow-test-product', quantity: 1, price: 100, title: 'CODkar test product' }],
     matching: buildMatching({
       email: 'codflow-test@example.com',
       phone: '+10000000000',
@@ -246,7 +246,7 @@ export async function sendTestEvent(
       country: 'us',
     }),
     clientIpAddress: null,
-    clientUserAgent: 'CodFlow-EventTester/1.0',
+    clientUserAgent: 'CODkar-EventTester/1.0',
     fbp: null,
     fbc: null,
     ttclid: null,

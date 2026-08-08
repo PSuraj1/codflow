@@ -15,7 +15,7 @@ import type { StuckQueryInput } from './adminRoutes';
  *
  * Only the push-recovery surface for now — the full order management screens
  * are a later phase. This exists because a failed push is the one order state a
- * merchant cannot resolve on their own: the order is in CodFlow, the customer
+ * merchant cannot resolve on their own: the order is in CODkar, the customer
  * is expecting delivery, and without a retry the merchant would have to rekey
  * it into Shopify by hand.
  */

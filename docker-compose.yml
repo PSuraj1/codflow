@@ -1,4 +1,4 @@
-﻿# Local development dependencies for CodFlow.
+﻿# Local development dependencies for CODkar.
 #
 # This file provisions Postgres and Redis only — the API and admin run on the
 # host via `shopify app dev`, which owns the HTTPS tunnel and injects the
