@@ -135,12 +135,18 @@ async function exchangeForOfflineToken(
       shop: shopDomain,
       sessionToken,
       requestedTokenType: RequestedTokenType.OfflineAccessToken,
+      // Requests an *expiring* token. Omitting this sends `expiring: '0'` and
+      // asks Shopify for a permanent one — which it no longer accepts on calls,
+      // so the app installs cleanly and then fails every Admin API request.
+      // The token that comes back lives about an hour and carries a refresh
+      // token; `loadOfflineSession` keeps it current from there.
+      expiring: true,
     });
 
     await sessionStorage.storeSession(session);
 
     log.info(
-      { shop: shopDomain, scopes: session.scope },
+      { shop: shopDomain, scopes: session.scope, expires: session.expires?.toISOString() },
       'Offline access token obtained via token exchange',
     );
 

@@ -4,7 +4,7 @@ import {
   type Session,
 } from '@shopify/shopify-api';
 import { shopify } from './client';
-import { deleteShopSessions } from './sessionStorage';
+import { deleteShopSessions, refreshRejectedSession } from './sessionStorage';
 import { createLogger } from '../lib/logger';
 import { ReauthRequiredError, ShopifyApiError, toError } from '../lib/errors';
 
@@ -72,7 +72,13 @@ export async function adminGraphql<T>(
   options: GraphqlRequestOptions = {},
 ): Promise<T> {
   const maxAttempts = options.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
-  const client = new shopify.clients.Graphql({ session });
+
+  // Reassigned when a 401 turns out to be an expired token rather than a
+  // revoked grant: the retry has to run against the renewed token, and the
+  // client binds its session at construction.
+  let active = session;
+  let client = new shopify.clients.Graphql({ session: active });
+  let refreshAttempted = false;
 
   let lastError: unknown;
 
@@ -113,12 +119,29 @@ export async function adminGraphql<T>(
       if (error instanceof HttpResponseError) {
         const status = error.response.code;
 
-        // 401 with a token Shopify itself issued means the grant is gone.
-        // Retrying cannot help; the merchant has to re-authorize.
+        // A 401 used to mean one thing: the grant is gone. Now that offline
+        // tokens expire it means one of two, and they call for opposite
+        // responses — so the refresh token is spent before anything is
+        // destroyed. Purging first would throw the refresh token away with it
+        // and strand every background job for this shop until a merchant next
+        // opens the app, which for a queue-driven COD app is an outage.
         if (status === 401) {
-          log.warn({ shop: session.shop }, 'Offline token rejected, purging session');
-          await deleteShopSessions(session.shop);
-          throw new ReauthRequiredError(session.shop, 'access token was revoked');
+          if (!refreshAttempted && attempt < maxAttempts) {
+            refreshAttempted = true;
+
+            const renewed = await refreshRejectedSession(active);
+
+            if (renewed) {
+              log.info({ shop: active.shop }, 'Token had expired, refreshed and retrying');
+              active = renewed;
+              client = new shopify.clients.Graphql({ session: active });
+              continue;
+            }
+          }
+
+          log.warn({ shop: active.shop }, 'Offline token rejected, purging session');
+          await deleteShopSessions(active.shop);
+          throw new ReauthRequiredError(active.shop, 'access token was revoked');
         }
 
         if (isRetriableStatus(status) && attempt < maxAttempts) {

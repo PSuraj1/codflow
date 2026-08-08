@@ -12,14 +12,15 @@ The app is **deployed and installed**. It runs at `https://app.codflow.in` on
 Render, and is installed on the development store `codkar-th9dk7h6`.
 
 **It cannot create orders.** Every Shopify Admin API call returns 403 — see
-[The blocker](#the-blocker). Nothing in this repository can fix that.
+[The blocker](#the-blocker). A fix is written and untested against live
+Shopify.
 
-Typecheck and build clean. 1,053 tests, no external services required.
+Typecheck and build clean. 1,068 tests, no external services required.
 
 ```
 packages/shared    93 tests
 apps/admin        161 tests
-apps/api          735 tests
+apps/api          750 tests
 extensions         64 tests
 ```
 
@@ -54,22 +55,35 @@ The confirming evidence is on the dashboard rather than in the logs: it shows
 **USD** and the store *domain* instead of INR and the store *name*. Those are
 the fallback defaults, and they only appear when the metadata call failed.
 
-**Most likely cause.** Setting Distribution to Public removed the
-in-development allowance — the Partner page says *"You can access your selected
-data in development without submitting for review"* — while the protected
-customer data request is still in `Draft`. The scopes include four protected
-ones (`read_customers`, `write_customers`, `read_orders`, `write_orders`), and
-Shopify gates the token rather than the individual query, which is why a
-product lookup fails.
+**Most likely cause — the app was asking for a token Shopify no longer accepts.**
+Shopify is replacing permanent offline access tokens with expiring ones, and
+the Partner dashboard's API health page reported *"Deprecated offline token use
+detected"* against this app, adding that deprecated tokens **"can't be used to
+make calls and must be exchanged for new offline tokens."** That explains a
+403 on queries touching no customer data: the token is refused, not the query.
 
-**There is no submit button for that request.** It is reviewed only when an App
-Store listing is submitted. So the app is blocked on its own development store
-with no self-service way out.
+The cause was one missing argument. `shopify.auth.tokenExchange` takes
+`expiring?: boolean` and sends `expiring: '0'` when it is absent, so every
+exchange explicitly requested a permanent token. Nothing re-exchanged it
+either: `resolveSession` only re-exchanges on a missing token or narrowed
+scopes, never on age or rejection.
 
-The open action is a Partner support ticket asking for the request to be
-reviewed, or for development access while the listing is prepared. Shopify's
-own error id from the failure is
-`62d3e4ef-1e10-496a-8f91-edb7e37022ed-1786074679`.
+**Fixed, but unproven.** The exchange now passes `expiring: true`,
+`shopify/tokenRefresh.ts` migrates an existing permanent token via
+`migrateToExpiringToken` — no reinstall, no merchant interaction — and refreshes
+an expiring one before use. This has only been tested against mocks. To confirm
+it, deploy and open the app: the logs should carry *"Migrated to an expiring
+offline access token"*, and the dashboard should show INR and the store name
+rather than the USD-and-domain fallbacks.
+
+**An earlier theory, now doubted.** This was previously read as Public
+distribution removing the in-development allowance while the protected customer
+data request sat in `Draft`. Two things argue against it: the Partner page still
+states *"You can access your selected data in development without submitting for
+review"*, and the App Store review checklist marks the request **complete**. Not
+impossible — the scopes do include four protected ones — but the token is the
+better explanation and the cheaper thing to rule out. Shopify's own error id
+from the original failure is `62d3e4ef-1e10-496a-8f91-edb7e37022ed-1786074679`.
 
 ---
 
@@ -212,6 +226,22 @@ swallows its errors so a queue outage cannot fail a shopper's submission. Orders
 saved, shoppers saw success, and *nothing* was ever pushed, synced, scored or
 reported. `jobKey()` joins with hyphens; `queue/queues.test.ts` guards it.
 
+**`tokenExchange` asks for a deprecated token unless told otherwise.** Its
+`expiring` argument is optional and the library sends `expiring: '0'` when it is
+missing — a permanent offline token, which Shopify refuses on every Admin API
+call. The app installed cleanly and then failed every request, including
+queries touching no customer data, which is what made it read as a scopes
+problem. Two things make it hard to find: nothing in the app's own code says
+"permanent", and the failure surfaces as a bare 403 with an empty body. The
+evidence is in the Partner dashboard under Monitoring → API health, not in the
+app's logs. **Expiring tokens live about an hour**, so anything holding a
+session across time must refresh — `loadOfflineSession` does it for every
+caller, and `graphql.ts` retries a 401 through the refresh token *before*
+purging the session, because purging throws the refresh token away and strands
+the worker until a merchant next opens the app. Public apps created on or after
+1 Apr 2026 must use expiring tokens; every other public app must migrate by
+1 Jan 2027.
+
 **Shopify wraps `window.fetch` on every storefront.** The wrapper intermittently
 never settles on app-proxy requests, with no error. All storefront requests use
 `XMLHttpRequest` with explicit timeouts.
@@ -326,6 +356,16 @@ admin renders. Miss one and the shop is gated as Enterprise while its badge says
 Free. `withPlanExemption` takes a resolved plan and returns a plan, so a fifth
 caller reads as "this, unless exempt".
 
+**Token renewal has exactly one seam, and it is `loadOfflineSession`.** All
+seven Admin API consumers — order push, the storefront config, billing, webhook
+handlers, `diagnose:theme` — reach Shopify through it, so migrating a permanent
+token and refreshing an expiring one both live there rather than at the call
+sites. A new consumer inherits it by loading a session the normal way. Renewal
+never throws: on failure the caller gets the session it would have got anyway,
+so a Shopify outage cannot turn into a boot failure or a crashed job. The
+worker additionally sweeps at boot (`migratePermanentTokens`) for shops nothing
+has touched yet.
+
 **Queues** — eight declared, six with processors (`ORDER_PUSH`, `SHEET_SYNC`,
 `FRAUD_SCAN`, `PIXEL_DISPATCH`, `STATS_REBUILD`, `DATA_RETENTION`).
 `AUTOMATION` and `NOTIFICATION` are unused.
@@ -407,7 +447,11 @@ fields, `forceRtl`, `currencyFormat`, `dateFormat`, and `orderRetentionDays`.
 
 ### Real work, ordered by value
 
-1. **Unblock the Admin API.** Everything else is downstream.
+1. **Confirm the Admin API is unblocked.** Everything else is downstream. The
+   expiring-token fix is written and green against mocks but has never run
+   against live Shopify — deploy it, open the app, and check for the migration
+   line in the logs. If the 403 survives, the protected customer data theory in
+   [The blocker](#the-blocker) is back on the table.
 2. **Merchant notifications are entirely dead.** `notifyOnNewOrder`,
    `notifyOnHighRisk`, `notifyOnSyncFailure` and `customerEmailEnabled` appear
    nowhere in `apps/api/src` outside tests. `NotificationTemplate` is only

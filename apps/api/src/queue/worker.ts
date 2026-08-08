@@ -12,6 +12,7 @@ import { onPixelDispatchFailed, processPixelDispatch } from '../jobs/dispatchPix
 import { onStatsRebuildFailed, processStatsRebuild } from '../jobs/rebuildStats';
 import { onDataRetentionFailed, processDataRetention } from '../jobs/enforceRetention';
 import { closeQueues, scheduleRetentionSweep } from './queues';
+import { migratePermanentTokens } from '../shopify/sessionStorage';
 import { QueueName, type JobPayloads, type OrderPushJob } from './types';
 
 const log = createLogger('worker');
@@ -144,8 +145,19 @@ async function start(): Promise<void> {
   // throws — see `scheduleRetentionSweep`.
   await scheduleRetentionSweep();
 
+  // Shopify refuses calls made with the deprecated permanent offline tokens, so
+  // a shop still holding one is broken until it is migrated. Every path that
+  // loads a session migrates on demand; this catches the shop nothing has
+  // touched yet. Never throws — see `migratePermanentTokens`.
+  const migrated = await migratePermanentTokens();
+
   log.info(
-    { queues: workers.length, concurrency: config.queue.concurrency, env: config.env },
+    {
+      queues: workers.length,
+      concurrency: config.queue.concurrency,
+      env: config.env,
+      ...(migrated > 0 ? { migratedTokens: migrated } : {}),
+    },
     'CodFlow worker started',
   );
 }
