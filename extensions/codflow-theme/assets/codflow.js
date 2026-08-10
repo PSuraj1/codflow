@@ -424,14 +424,77 @@
   /* Where a product-page button is placed when the merchant has not placed one
    * themselves. Ordered most specific first: a theme's own product form is the
    * right home, and the payment-button container is the fallback for themes
-   * that render Buy Now outside the cart form. */
+   * that render Buy Now outside the cart form.
+   *
+   * The first two entries cover every Online Store 2.0 theme Shopify ships.
+   * The rest exist because older and third-party themes predate that markup and
+   * are still on a large share of live stores — Debut and Brooklyn use
+   * `product-single__form`, Prestige uses `ProductForm__BuyButtons`, Turbo and
+   * Brooklyn use the `AddToCartForm` id. A theme matching none of these is what
+   * `anchorFromBuyButton` is for. */
   var PRODUCT_ANCHORS = [
     'form[action*="/cart/add"] .product-form__buttons',
     'form[action*="/cart/add"]',
     '.product-form__buttons',
+    '.ProductForm__BuyButtons',
+    '.product-single__form',
+    '.product-form__cart',
+    '#AddToCartForm',
     '.shopify-payment-button',
     '[data-product-form]'
   ];
+
+  /* Controls that *are* the add-to-cart action, used to derive an anchor when
+   * no container above matched. Deliberately separate: these identify a button,
+   * and the button itself is the wrong place to insert after — its parent is.
+   *
+   * `name="add"` is the one constant across almost every theme ever written,
+   * because Shopify's own cart endpoint requires it. It is the last thing to
+   * try and the most likely to work. */
+  var ADD_TO_CART_CONTROLS = [
+    '[data-add-to-cart]',
+    '.product-form__submit',
+    '.product-form__cart-submit',
+    '.btn--add-to-cart',
+    '#AddToCart',
+    'form[action*="/cart/add"] [name="add"]',
+    '[name="add"]'
+  ];
+
+  /**
+   * Derives an anchor from the add-to-cart control.
+   *
+   * The fallback for a theme whose markup matches none of `PRODUCT_ANCHORS` —
+   * custom builds and heavily edited themes, where the alternative is placing
+   * no button at all and the merchant concluding the app does not work.
+   *
+   * Returns the control's *parent* rather than the control, so the COD button
+   * lands beside Add to cart rather than inside whatever wrapper the theme
+   * gave it. A parent that is the form itself is used as-is; going further up
+   * would escape the buy-button area entirely.
+   */
+  function anchorFromBuyButton() {
+    for (var i = 0; i < ADD_TO_CART_CONTROLS.length; i += 1) {
+      var control = null;
+
+      try {
+        control = document.querySelector(ADD_TO_CART_CONTROLS[i]);
+      } catch (error) {
+        log('Invalid add-to-cart selector: ' + ADD_TO_CART_CONTROLS[i], error);
+        continue;
+      }
+
+      /* A hidden control belongs to a variant picker or a quick-add drawer
+       * elsewhere on the page, not to the product in view. */
+      if (!control || !control.offsetParent) continue;
+
+      return control.parentNode && control.parentNode.nodeType === 1
+        ? control.parentNode
+        : control;
+    }
+
+    return null;
+  }
 
   /**
    * Places the product-page button when no app block provides a slot.
@@ -494,6 +557,11 @@
         log('Invalid anchor selector: ' + selectors[i], error);
       }
     }
+
+    /* Last resort before giving up: find the add-to-cart control itself. A
+     * theme that matches none of the container selectors above still has to
+     * submit to /cart/add, so this is what keeps a custom theme working. */
+    if (!anchor) anchor = anchorFromBuyButton();
 
     if (!anchor) {
       log('No product form found — cannot place the COD button automatically');
