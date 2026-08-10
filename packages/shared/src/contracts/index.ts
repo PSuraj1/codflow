@@ -13,5 +13,6 @@ export * from './sheets.js';
 export * from './fraud.js';
 export * from './pixels.js';
 export * from './analytics.js';
+export * from './setup.js';
 export * from './billing.js';
 export * from './postal.js';

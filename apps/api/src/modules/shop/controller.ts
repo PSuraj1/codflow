@@ -4,6 +4,7 @@ import { ok } from '../../lib/http';
 import type { AdminAuthContext } from '../../types/express';
 import * as audit from '../audit/service';
 import * as service from './service';
+import * as setupGuide from './setupGuide';
 import type {
   UpdateBrandingInput,
   UpdateFeesInput,
@@ -169,6 +170,28 @@ export async function updateFees(req: Request, res: Response, next: NextFunction
     });
 
     ok(res, after);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * `GET /api/admin/shop/setup` — the setup checklist.
+ *
+ * Separate from `GET /session` on purpose. The session response is on the
+ * critical path of every app open and must stay fast; this makes an Admin API
+ * call to read the merchant's theme, so it loads alongside the dashboard
+ * instead of in front of it.
+ */
+export async function getSetupGuide(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const auth = requireAuth(req);
+
+    ok(res, await setupGuide.build(auth.shopId, auth.session));
   } catch (error) {
     next(error);
   }

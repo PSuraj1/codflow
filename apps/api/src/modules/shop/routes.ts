@@ -10,6 +10,7 @@ import {
   getBranding,
   getFees,
   getSession,
+  getSetupGuide,
   getVisibility,
   updateBranding,
   updateFees,
@@ -43,6 +44,8 @@ shopRouter.patch(
 
 shopRouter.get('/shop/fees', getFees);
 shopRouter.patch('/shop/fees', validate({ body: UpdateFeesSchema }), updateFees);
+
+shopRouter.get('/shop/setup', getSetupGuide);
 
 shopRouter.put(
   '/shop/onboarding',

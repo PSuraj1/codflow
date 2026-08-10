@@ -23,6 +23,19 @@ loadRootEnv();
 
 import { adminGraphql } from '../shopify/graphql';
 import { loadOfflineSession } from '../shopify/sessionStorage';
+import {
+  EmbedStatus,
+  embedStatusFromSettings,
+  parseThemeSettings,
+} from '../shopify/themeEmbed';
+
+/** Script wording for each state. Longer than the UI's, because this is read in a terminal. */
+const VERDICT: Record<EmbedStatus, string> = {
+  [EmbedStatus.ENABLED]: 'app embed ENABLED',
+  [EmbedStatus.DISABLED]: 'app embed added but DISABLED',
+  [EmbedStatus.ABSENT]: 'app embed NOT ADDED to this theme',
+  [EmbedStatus.UNKNOWN]: 'could not determine',
+};
 
 const THEMES_QUERY = /* GraphQL */ `
   query CodFlowThemes {
@@ -60,64 +73,17 @@ interface SettingsResponse {
   theme: { files: { nodes: Array<{ body: { content?: string } }> } } | null;
 }
 
-/** An app embed entry in `settings_data.json`, keyed by an opaque block id. */
-interface EmbedBlock {
-  type?: string;
-  disabled?: boolean;
-}
-
 /**
- * Parses `settings_data.json`, which is not JSON.
+ * The parser and the state rules live in `shopify/themeEmbed`, which the setup
+ * guide also uses. Keeping one copy matters more than it looks: this script and
+ * the merchant-facing checklist must agree on whether the embed is on, and two
+ * implementations of a `settings_data.json` parser would eventually disagree
+ * about some merchant's theme.
  *
- * Shopify's own themes ship it with a `/* … *\/` banner at the top, and the
- * theme editor preserves whatever comments a developer adds. `JSON.parse`
- * rejects the file outright, which reads as "the theme is broken" when it is
- * perfectly normal.
- *
- * Comment stripping is done outside string literals only — a naive replace
- * would corrupt any setting whose value contains `//`, which every theme has
- * the moment a merchant saves a URL.
+ * What stays here is the part a diagnostic needs and the guide does not —
+ * reporting on *every* theme rather than only the published one, which is how
+ * you find an embed enabled on the wrong theme.
  */
-function parseSettings(source: string): unknown {
-  let output = '';
-  let inString = false;
-  let escaped = false;
-
-  for (let index = 0; index < source.length; index += 1) {
-    const character = source[index] as string;
-    const next = source[index + 1];
-
-    if (inString) {
-      output += character;
-      if (escaped) escaped = false;
-      else if (character === '\\') escaped = true;
-      else if (character === '"') inString = false;
-      continue;
-    }
-
-    if (character === '"') {
-      inString = true;
-      output += character;
-      continue;
-    }
-
-    if (character === '/' && next === '*') {
-      const end = source.indexOf('*/', index + 2);
-      index = end === -1 ? source.length : end + 1;
-      continue;
-    }
-
-    if (character === '/' && next === '/') {
-      const end = source.indexOf('\n', index);
-      index = end === -1 ? source.length : end - 1;
-      continue;
-    }
-
-    output += character;
-  }
-
-  return JSON.parse(output);
-}
 
 async function main(): Promise<void> {
   const shopDomain = process.argv[2];
@@ -148,21 +114,9 @@ async function main(): Promise<void> {
 
     if (content) {
       try {
-        const parsed = parseSettings(content) as {
-          current?: { blocks?: Record<string, EmbedBlock> };
-        };
+        const status = embedStatusFromSettings(parseThemeSettings(content));
 
-        const blocks = Object.values(parsed.current?.blocks ?? {});
-
-        // The block type is `shopify://apps/<handle>/blocks/<block>/<uuid>`, so
-        // matching on the file name is what survives the handle changing.
-        const embed = blocks.find((block) => (block.type ?? '').includes('app-embed'));
-
-        verdict = !embed
-          ? 'app embed NOT ADDED to this theme'
-          : embed.disabled
-            ? 'app embed added but DISABLED'
-            : 'app embed ENABLED';
+        verdict = VERDICT[status];
       } catch {
         verdict = 'settings_data.json is not valid JSON';
       }

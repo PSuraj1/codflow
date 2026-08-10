@@ -14,6 +14,7 @@ import {
 import { useSession } from '../hooks/useSession';
 import { useAnalyticsOverview, type AnalyticsRangeState } from '../hooks/useAnalytics';
 import { StoreHealthCard } from '../components/StoreHealthCard';
+import { SetupGuideCard } from '../components/SetupGuideCard';
 import { StatTile } from '../components/charts/StatTile';
 import { ChartFrame } from '../components/charts/ChartFrame';
 import { TimeSeriesChart } from '../components/charts/TimeSeriesChart';
@@ -62,6 +63,14 @@ export function HomePage() {
       secondaryActions={<RangePicker value={range} onChange={setRange} />}
     >
       <BlockStack gap="400">
+        {/*
+          Above everything, and above the fold. A merchant whose app embed is
+          off has no orders to look at, so leading with empty charts tells them
+          the app does not work. This card renders nothing once it is complete
+          or dismissed.
+        */}
+        <SetupGuideCard />
+
         {/*
           Today, separate from the range above it. A merchant checking the app
           mid-morning wants today's count without changing a filter, and it is

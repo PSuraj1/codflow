@@ -375,6 +375,17 @@ so a Shopify outage cannot turn into a boot failure or a crashed job. The
 worker additionally sweeps at boot (`migratePermanentTokens`) for shops nothing
 has touched yet.
 
+**The setup guide derives every step; it stores nothing.** `Shop.onboardingStep`
+is an integer cursor and is *not* what drives the checklist —
+`modules/shop/setupGuide.ts` recomputes each step on every read, so a step that
+stops being true un-ticks itself. That matters for exactly one step: the app
+embed is per-theme, so a merchant who switches theme silently loses it, and a
+stored counter would keep claiming setup was finished while the storefront
+rendered nothing. The stored columns now mean only "the merchant hid the card".
+`SetupStepState.UNKNOWN` is a third state on purpose — reading the embed needs
+an Admin API call that can fail on its own, and reporting that as "not done"
+tells a merchant who did enable it to go fix nothing.
+
 **Queues** — eight declared, six with processors (`ORDER_PUSH`, `SHEET_SYNC`,
 `FRAUD_SCAN`, `PIXEL_DISPATCH`, `STATS_REBUILD`, `DATA_RETENTION`).
 `AUTOMATION` and `NOTIFICATION` are unused.
