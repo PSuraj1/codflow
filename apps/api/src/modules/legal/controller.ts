@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { NextFunction, Request, Response } from 'express';
+import { LEGAL_PAGES, type LegalSlug } from '@codflow/shared';
 import { NotFoundError } from '../../lib/errors';
 import { createLogger } from '../../lib/logger';
 import { renderMarkdown, renderPage } from './markdown';
@@ -35,12 +36,25 @@ interface LegalPage {
   readonly title: string;
 }
 
-export const PAGES: Readonly<Record<string, LegalPage>> = {
-  privacy: { file: 'privacy-policy.md', title: 'Privacy Policy' },
-  terms: { file: 'terms-of-service.md', title: 'Terms of Service' },
-  dpa: { file: 'data-processing-addendum.md', title: 'Data Processing Addendum' },
-  support: { file: 'support.md', title: 'Support' },
+/**
+ * Which markdown file backs each slug.
+ *
+ * Typed as `Record<LegalSlug, string>` deliberately: adding a page to
+ * `LEGAL_PAGES` in `@codflow/shared` without adding its file here fails the
+ * build. The admin footer links every slug in that list, so the alternative is
+ * shipping a link to a page this router cannot serve.
+ */
+const FILES: Readonly<Record<LegalSlug, string>> = {
+  privacy: 'privacy-policy.md',
+  terms: 'terms-of-service.md',
+  dpa: 'data-processing-addendum.md',
+  support: 'support.md',
 };
+
+/** Slug -> document, built from the shared list so the two cannot diverge. */
+export const PAGES: Readonly<Record<string, LegalPage>> = Object.fromEntries(
+  LEGAL_PAGES.map((page) => [page.slug, { file: FILES[page.slug], title: page.title }]),
+);
 
 /**
  * Rendered pages, cached after the first read.

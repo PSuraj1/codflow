@@ -4,6 +4,7 @@ import { useSession } from '../hooks/useSession';
 import { ApiError } from '../lib/apiClient';
 import { openTop } from '../lib/appBridge';
 import { SupportWidget } from './SupportWidget';
+import { LegalFooter } from './LegalFooter';
 
 /**
  * Gate between App Bridge booting and the app rendering.
@@ -17,7 +18,7 @@ import { SupportWidget } from './SupportWidget';
  * still loading, a recoverable permissions problem, and a hard failure.
  */
 
-export function AppShell({ children }: { children: ReactNode }) {
+function ShellBody({ children }: { children: ReactNode }) {
   const { data: session, isPending, error, refetch } = useSession();
 
   if (isPending) {
@@ -112,6 +113,23 @@ export function AppShell({ children }: { children: ReactNode }) {
         on the screens a merchant is most likely to be stuck on.
       */}
       <SupportWidget />
+    </>
+  );
+}
+
+/**
+ * The app frame.
+ *
+ * `ShellBody` returns early for the loading and failure states, so the footer
+ * is attached out here rather than inside it — a merchant looking at "CODkar
+ * could not start" is exactly the person who may want the support page, and
+ * those two screens are the ones a reviewer is most likely to photograph.
+ */
+export function AppShell({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <ShellBody>{children}</ShellBody>
+      <LegalFooter />
     </>
   );
 }
