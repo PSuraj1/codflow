@@ -45,10 +45,11 @@ interface LegalPage {
  * shipping a link to a page this router cannot serve.
  */
 const FILES: Readonly<Record<LegalSlug, string>> = {
+  faq: 'faq.md',
+  support: 'support.md',
   privacy: 'privacy-policy.md',
   terms: 'terms-of-service.md',
   dpa: 'data-processing-addendum.md',
-  support: 'support.md',
 };
 
 /** Slug -> document, built from the shared list so the two cannot diverge. */

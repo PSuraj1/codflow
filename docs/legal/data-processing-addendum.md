@@ -11,7 +11,7 @@ Between: [COMPANY LEGAL NAME] ("Processor") and the merchant installing CODkar (
 > lawyer's review before you rely on it. Standard Contractual Clauses, where
 > required, must be attached rather than summarised.
 
-This addendum forms part of the [Terms of Service](terms-of-service.md).
+This addendum forms part of the [Terms of Service](terms).
 
 ## 1. Roles
 
@@ -124,7 +124,7 @@ adequacy decision, or other]. [ATTACH THE CLAUSES.]
 ## 9. Liability
 
 Liability under this addendum is subject to the limits in the
-[Terms of Service](terms-of-service.md).
+[Terms of Service](terms).
 
 ## 10. Contact
 

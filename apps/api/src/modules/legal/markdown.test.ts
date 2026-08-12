@@ -146,8 +146,20 @@ describe('the real documents', () => {
    * The placeholders are the point of the drafts, not a defect — but they must
    * not be published by accident, so this records that they are still there.
    * Delete this test once the documents are filled in and reviewed.
+   *
+   * Scoped to the four legal documents rather than every file in the folder.
+   * `faq.md` is a support document, not a draft contract: it has no blanks to
+   * fill and needs no lawyer, so asserting it still contains placeholders would
+   * fail forever and say nothing.
    */
-  it.each(files)('%s still has placeholders awaiting real values', (name) => {
+  const AWAITING_REVIEW = [
+    'privacy-policy.md',
+    'terms-of-service.md',
+    'data-processing-addendum.md',
+    'support.md',
+  ];
+
+  it.each(AWAITING_REVIEW)('%s still has placeholders awaiting real values', (name) => {
     expect(readFileSync(path.join(DOCS, name), 'utf8')).toMatch(/\[[A-Z][A-Z\s/,.-]+\]/);
   });
 });

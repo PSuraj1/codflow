@@ -45,7 +45,7 @@ Sheets and report conversions to advertising platforms.
 
 - Providing the app substantially as described.
 - Processing shopper data only on your instructions, as set out in the
-  [Data Processing Addendum](data-processing-addendum.md).
+  [Data Processing Addendum](dpa).
 - Telling you about material changes to the service or to these terms.
 
 ## 5. What the app does not do
@@ -95,8 +95,8 @@ safe to give it.
 ## 8. Data and privacy
 
 Our handling of personal data is described in the
-[Privacy Policy](privacy-policy.md) and the
-[Data Processing Addendum](data-processing-addendum.md), which form part of
+[Privacy Policy](privacy) and the
+[Data Processing Addendum](dpa), which form part of
 these terms.
 
 On uninstall, your data is retained but deactivated so a reinstall does not lose

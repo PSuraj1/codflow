@@ -20,11 +20,16 @@ export interface LegalPageLink {
   readonly title: string;
 }
 
+/**
+ * Order matters — it is the footer's order. FAQ and Support lead because a
+ * merchant reaching the footer usually wants help, not the terms.
+ */
 export const LEGAL_PAGES = [
+  { slug: 'faq', title: 'FAQ' },
+  { slug: 'support', title: 'Support' },
   { slug: 'privacy', title: 'Privacy Policy' },
   { slug: 'terms', title: 'Terms of Service' },
   { slug: 'dpa', title: 'Data Processing Addendum' },
-  { slug: 'support', title: 'Support' },
 ] as const satisfies readonly LegalPageLink[];
 
 export type LegalSlug = (typeof LEGAL_PAGES)[number]['slug'];

@@ -48,7 +48,7 @@ access and deletion requests, and those requests reach us automatically through
 Shopify.
 
 If you are a **merchant**, email [PRIVACY CONTACT EMAIL]. See the
-[Privacy Policy](privacy-policy.md).
+[Privacy Policy](privacy).
 
 ## Status and emergencies
 
