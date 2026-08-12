@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { NextFunction, Request, Response } from 'express';
-import { LEGAL_PAGES, type LegalSlug } from '@codflow/shared';
+import { HELP_PAGES, LEGAL_PAGES, type HelpSlug, type LegalSlug } from '@codflow/shared';
 import { NotFoundError } from '../../lib/errors';
 import { createLogger } from '../../lib/logger';
 import { renderMarkdown, renderPage } from './markdown';
@@ -29,7 +29,7 @@ const log = createLogger('legal');
  * `apps/api/{src,dist}/modules/legal` — so one path serves development and the
  * container alike.
  */
-const DOCS = path.resolve(__dirname, '../../../../..', 'docs/legal');
+const DOCS = path.resolve(__dirname, '../../../../..', 'docs');
 
 interface LegalPage {
   readonly file: string;
@@ -45,16 +45,27 @@ interface LegalPage {
  * shipping a link to a page this router cannot serve.
  */
 const FILES: Readonly<Record<LegalSlug, string>> = {
-  faq: 'faq.md',
-  support: 'support.md',
-  privacy: 'privacy-policy.md',
-  terms: 'terms-of-service.md',
-  dpa: 'data-processing-addendum.md',
+  support: 'legal/support.md',
+  privacy: 'legal/privacy-policy.md',
+  terms: 'legal/terms-of-service.md',
+  dpa: 'legal/data-processing-addendum.md',
 };
 
-/** Slug -> document, built from the shared list so the two cannot diverge. */
+/**
+ * Help documents. Same machinery, different directory and different standard —
+ * `docs/help` is support material, `docs/legal` is contracts awaiting review.
+ */
+const HELP_FILES: Readonly<Record<HelpSlug, string>> = {
+  faq: 'help/faq.md',
+};
+
+/** Slug -> document, built from the shared lists so the two cannot diverge. */
 export const PAGES: Readonly<Record<string, LegalPage>> = Object.fromEntries(
   LEGAL_PAGES.map((page) => [page.slug, { file: FILES[page.slug], title: page.title }]),
+);
+
+export const HELP: Readonly<Record<string, LegalPage>> = Object.fromEntries(
+  HELP_PAGES.map((page) => [page.slug, { file: HELP_FILES[page.slug], title: page.title }]),
 );
 
 /**
@@ -66,43 +77,63 @@ export const PAGES: Readonly<Record<string, LegalPage>> = Object.fromEntries(
  */
 const cache = new Map<string, string>();
 
-async function render(slug: string): Promise<string> {
-  const cached = cache.get(slug);
-  if (cached) return cached;
-
-  const page = PAGES[slug];
+/** Keyed by file rather than slug, so the two sets cannot collide in the cache. */
+async function render(pages: Readonly<Record<string, LegalPage>>, slug: string): Promise<string> {
+  const page = pages[slug];
   if (!page) throw new NotFoundError('No such page');
+
+  const cached = cache.get(page.file);
+  if (cached) return cached;
 
   let source: string;
 
   try {
     source = await readFile(path.join(DOCS, page.file), 'utf8');
   } catch (error) {
-    // Worth an error-level log: a missing legal page is a broken URL on a
-    // public app listing, and nothing else in the app will notice.
-    log.error({ err: error, slug, docs: DOCS }, 'Legal page is missing from the deployment');
+    // Worth an error-level log: a missing page is a broken URL on a public app
+    // listing, and nothing else in the app will notice.
+    log.error({ err: error, slug, docs: DOCS }, 'Served page is missing from the deployment');
     throw new NotFoundError('This page is temporarily unavailable');
   }
 
   const html = renderPage(page.title, renderMarkdown(source));
-  cache.set(slug, html);
+  cache.set(page.file, html);
 
   return html;
 }
 
-/** `GET /legal/:page` — a public, unauthenticated policy page. */
-export async function serve(req: Request, res: Response, next: NextFunction): Promise<void> {
+/**
+ * Sends a rendered document.
+ *
+ * The cache header is the reason both routes share this: an hour is long enough
+ * to be cheap and short enough that a correction to a published policy — or an
+ * FAQ answer that turned out to be wrong — reaches readers the same day.
+ */
+async function send(
+  pages: Readonly<Record<string, LegalPage>>,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
-    const html = await render(req.params.page as string);
+    const html = await render(pages, req.params.page as string);
 
     res.type('html');
-    // Long enough to be cheap, short enough that a correction to a published
-    // policy reaches readers the same day.
     res.setHeader('Cache-Control', 'public, max-age=3600');
     res.send(html);
   } catch (error) {
     next(error);
   }
+}
+
+/** `GET /legal/:page` — a public, unauthenticated policy page. */
+export function serve(req: Request, res: Response, next: NextFunction): Promise<void> {
+  return send(PAGES, req, res, next);
+}
+
+/** `GET /help/:page` — the FAQ, and anything else support-facing. */
+export function serveHelp(req: Request, res: Response, next: NextFunction): Promise<void> {
+  return send(HELP, req, res, next);
 }
 
 /** `GET /legal` — an index, so the base URL is not a dead end. */

@@ -135,6 +135,13 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: false,
         },
+        /* The FAQ, for the same reason. Every root path the API serves needs an
+         * entry here or it silently renders the admin shell in development. */
+        '/help': {
+          target: apiTarget,
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
 

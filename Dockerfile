@@ -108,6 +108,12 @@ COPY --from=build /app/apps/admin/dist ./apps/admin/dist
 # the Partner Dashboard.
 COPY docs/legal ./docs/legal
 
+# The FAQ is served the same way, from /help/faq. Kept out of docs/legal
+# because it is support material rather than a contract — nothing here is
+# reviewed by a lawyer, and grouping it with the policies invited that
+# confusion.
+COPY docs/help ./docs/help
+
 # Schema and migrations must ship: the release command runs `prisma migrate deploy`.
 COPY --from=build /app/apps/api/prisma ./apps/api/prisma
 COPY --from=build /app/apps/api/prisma.config.ts ./apps/api/prisma.config.ts

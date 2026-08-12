@@ -1,8 +1,8 @@
 import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { LEGAL_PAGES } from '@codflow/shared';
-import { PAGES } from './controller';
+import { HELP_PAGES, LEGAL_PAGES } from '@codflow/shared';
+import { HELP, PAGES } from './controller';
 
 /**
  * Legal pages, end to end from link to file.
@@ -18,7 +18,7 @@ import { PAGES } from './controller';
  *    locally.
  */
 
-const DOCS = path.resolve(__dirname, '../../../../..', 'docs/legal');
+const DOCS = path.resolve(__dirname, '../../../../..', 'docs');
 
 describe('every linked page is served', () => {
   it.each(LEGAL_PAGES.map((page) => page.slug))('routes %s', (slug) => {
@@ -47,6 +47,30 @@ describe('every served page has its document', () => {
   });
 });
 
+describe('help pages', () => {
+  it.each(HELP_PAGES.map((page) => page.slug))('routes %s', (slug) => {
+    expect(HELP[slug]).toBeDefined();
+  });
+
+  it.each(HELP_PAGES.map((page) => page.slug))('%s has a readable markdown file', async (slug) => {
+    // Lives under docs/help, which needs its own `.dockerignore` negation and
+    // its own Dockerfile COPY. Missing either ships an image where the FAQ
+    // 404s and nothing else changes.
+    const file = HELP[slug]?.file;
+
+    expect(file).toMatch(/^help\//);
+    await expect(access(path.join(DOCS, file as string))).resolves.toBeUndefined();
+  });
+
+  it('is kept out of the legal set', () => {
+    // The FAQ is support material, not a contract. Serving it from /legal
+    // implied a review it has not had.
+    for (const page of HELP_PAGES) {
+      expect(PAGES[page.slug]).toBeUndefined();
+    }
+  });
+});
+
 /**
  * Cross-links between the documents.
  *
@@ -59,23 +83,38 @@ describe('every served page has its document', () => {
  * says so out loud.
  */
 describe('cross-links resolve', () => {
-  const SERVED = new Set(LEGAL_PAGES.map((page) => page.slug));
+  /** Every URL the app actually serves a document at. */
+  const SERVED_PATHS = new Set([
+    ...LEGAL_PAGES.map((page) => `/legal/${page.slug}`),
+    ...HELP_PAGES.map((page) => `/help/${page.slug}`),
+  ]);
 
-  it.each(LEGAL_PAGES.map((page) => page.slug))(
-    '%s links only to pages that exist',
-    async (slug) => {
-      const source = await readFile(path.join(DOCS, PAGES[slug]!.file), 'utf8');
+  const DOCUMENTS = [
+    ...LEGAL_PAGES.map((page) => ({ slug: page.slug, mount: '/legal', file: PAGES[page.slug]!.file })),
+    ...HELP_PAGES.map((page) => ({ slug: page.slug, mount: '/help', file: HELP[page.slug]!.file })),
+  ];
 
-      const targets = Array.from(source.matchAll(/\]\(([^)]+)\)/g))
-        .map((match) => match[1] as string)
-        .filter((href) => !href.startsWith('https://') && !href.startsWith('#'));
+  it.each(DOCUMENTS)('$slug links only to pages that exist', async ({ slug, mount, file }) => {
+    const source = await readFile(path.join(DOCS, file), 'utf8');
 
-      for (const target of targets) {
-        // A `.md` suffix means the author linked by filename; the renderer
-        // strips it and produces a URL that does not exist.
-        expect(target.endsWith('.md'), `${slug} links by filename: ${target}`).toBe(false);
-        expect(SERVED.has(target as never), `${slug} links to unknown page: ${target}`).toBe(true);
-      }
-    },
-  );
+    const targets = Array.from(source.matchAll(/\]\(([^)]+)\)/g))
+      .map((match) => match[1] as string)
+      .filter((href) => !href.startsWith('https://') && !href.startsWith('#'));
+
+    for (const target of targets) {
+      // A `.md` suffix means the author linked by filename; the renderer strips
+      // only the extension and produces a URL that does not exist.
+      expect(target.endsWith('.md'), `${slug} links by filename: ${target}`).toBe(false);
+
+      // A bare slug is relative to the document's own mount, so it can only
+      // reach a sibling. The FAQ lives under /help and the policies under
+      // /legal, which is exactly where a bare `support` in the FAQ would have
+      // resolved to /help/support and 404'd.
+      const resolved = target.startsWith('/') ? target : `${mount}/${target}`;
+
+      expect(SERVED_PATHS.has(resolved), `${slug} links to nothing: ${target} -> ${resolved}`).toBe(
+        true,
+      );
+    }
+  });
 });

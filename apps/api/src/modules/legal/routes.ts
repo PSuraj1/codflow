@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { index, serve } from './controller';
+import { index, serve, serveHelp } from './controller';
 
 /**
  * Public legal pages, mounted at `/legal`.
@@ -16,3 +16,15 @@ export const legalRouter: Router = Router();
 
 legalRouter.get('/', index);
 legalRouter.get('/:page', serve);
+
+/**
+ * Help pages, mounted at `/help`.
+ *
+ * A separate mount rather than another entry under `/legal` because the FAQ is
+ * not a legal document. Filing it there implied a lawyer had reviewed it, and
+ * a merchant sent to `/legal/faq` for "how do I show the button" is being told
+ * something untrue about what they are reading.
+ */
+export const helpRouter: Router = Router();
+
+helpRouter.get('/:page', serveHelp);

@@ -21,11 +21,10 @@ export interface LegalPageLink {
 }
 
 /**
- * Order matters — it is the footer's order. FAQ and Support lead because a
- * merchant reaching the footer usually wants help, not the terms.
+ * The contracts, and only the contracts. Support material lives in
+ * `HELP_PAGES` — see the note there for why the two are kept apart.
  */
 export const LEGAL_PAGES = [
-  { slug: 'faq', title: 'FAQ' },
   { slug: 'support', title: 'Support' },
   { slug: 'privacy', title: 'Privacy Policy' },
   { slug: 'terms', title: 'Terms of Service' },
@@ -37,4 +36,23 @@ export type LegalSlug = (typeof LEGAL_PAGES)[number]['slug'];
 /** The public path for a legal page. One definition, so the shape cannot drift. */
 export function legalPath(slug: LegalSlug): string {
   return `/legal/${slug}`;
+}
+
+/**
+ * Help pages, served from `/help/<slug>`.
+ *
+ * Separate from `LEGAL_PAGES` because the two are different kinds of document
+ * and conflating them has a cost in both directions: the policies are drafts a
+ * lawyer must review and are held to that standard, while the FAQ is support
+ * material anyone on the team should be able to correct the moment a merchant
+ * asks something new. Filing the FAQ under `/legal/` implied a review it does
+ * not need, and made the placeholder tripwire on the legal drafts fail against
+ * a document that has no blanks to fill.
+ */
+export const HELP_PAGES = [{ slug: 'faq', title: 'FAQ' }] as const satisfies readonly LegalPageLink[];
+
+export type HelpSlug = (typeof HELP_PAGES)[number]['slug'];
+
+export function helpPath(slug: HelpSlug): string {
+  return `/help/${slug}`;
 }

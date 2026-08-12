@@ -3,7 +3,7 @@
 **CODkar — Cash on Delivery for Shopify**
 
 Questions merchants ask most, answered plainly. If yours is not here, see
-[Support](support).
+[Support](/legal/support).
 
 ## Setting up
 
@@ -193,8 +193,8 @@ erased. Reinstalling within that window restores your settings.
 ### Is CODkar GDPR compliant?
 
 CODkar implements Shopify's mandatory data-request, customer-redaction and
-shop-redaction webhooks. See the [Privacy Policy](privacy) and the
-[Data Processing Addendum](dpa).
+shop-redaction webhooks. See the [Privacy Policy](/legal/privacy) and the
+[Data Processing Addendum](/legal/dpa).
 
 ## Regions and languages
 
@@ -211,4 +211,4 @@ follows your store's language settings. Arabic renders right-to-left.
 
 ## Still stuck?
 
-See [Support](support) for how to reach us and what to include.
+See [Support](/legal/support) for how to reach us and what to include.

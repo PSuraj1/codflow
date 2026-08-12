@@ -38,10 +38,14 @@ docker-compose.yml
 README.md
 **/*.md
 
-# ...except the legal pages, which are *served* rather than documentation.
+# ...except the pages the app *serves* rather than documents.
 #
 # Their URLs go on the Shopify App Store listing, and the app reads the
 # markdown at request time — so excluding them here copies an empty directory
 # and every /legal/* URL 404s in production while working perfectly in
 # development. Exactly the failure modules/legal/controller.ts warns about.
+#
+# Every served directory needs its own negation: a new one added without a line
+# here reproduces that failure exactly, and only in production.
 !docs/legal/*.md
+!docs/help/*.md

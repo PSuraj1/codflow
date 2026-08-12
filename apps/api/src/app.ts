@@ -13,7 +13,7 @@ import { securityHeaders } from './middlewares/security';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import { webhookRouter } from './modules/webhooks/routes';
 import { apiRouter } from './routes';
-import { legalRouter } from './modules/legal/routes';
+import { helpRouter, legalRouter } from './modules/legal/routes';
 
 const log = createLogger('app');
 
@@ -71,6 +71,7 @@ export function createApp(): Express {
   // does not swallow them, and outside `/api` because these URLs go on the
   // App Store listing and are read by people, not by the app.
   app.use('/legal', legalRouter);
+  app.use('/help', helpRouter);
 
   // ---- The embedded admin SPA.
   mountAdmin(app);
