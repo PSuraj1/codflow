@@ -107,7 +107,8 @@ uninstall, at which point everything belonging to your store is deleted.
 
 We aim to keep the app available but do not commit to an uptime figure unless
 separately agreed in writing. Support is provided at [SUPPORT EMAIL], with a
-target first response of [RESPONSE TIME] on [SUPPORT HOURS].
+target first response of [RESPONSE TIME] during Monday to Saturday,
+10:00-18:00 IST.
 
 ## 10. Warranties and liability
 
@@ -139,8 +140,8 @@ will refund any prepaid fees for the unused period.
 
 ## 13. Governing law
 
-These terms are governed by the laws of [JURISDICTION], and the courts of
-[JURISDICTION] have exclusive jurisdiction.
+These terms are governed by the laws of India, and the courts of New Delhi
+have exclusive jurisdiction.
 
 ## 14. Contact
 

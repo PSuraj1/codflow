@@ -4,7 +4,7 @@
 
 ## Getting help
 
-Email [SUPPORT EMAIL]. Target first response: [RESPONSE TIME], [SUPPORT HOURS].
+Email [SUPPORT EMAIL]. Target first response: [RESPONSE TIME], Monday to Saturday, 10:00-18:00 IST.
 
 Tell us your **store domain** and, where it is about a specific order, its
 **CODkar reference** — the `CF-` code shown in the app. That is enough for us
