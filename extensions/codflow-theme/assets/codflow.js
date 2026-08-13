@@ -302,11 +302,50 @@
     });
   }
 
+  /**
+   * Checks in the background whether a cached config is still current.
+   *
+   * The cached copy is what keeps the button from arriving a beat after the
+   * page, so it is still served immediately — but serving it for the full
+   * cache lifetime without ever asking is how a merchant changes their COD fee,
+   * reloads the storefront, sees the old amount, and concludes the setting did
+   * not save. It had saved; the page was never going to ask again.
+   *
+   * `version` is a hash of the whole payload that the API computes for exactly
+   * this comparison. Re-rendering unconditionally would rebuild the button on
+   * every page view for nothing.
+   */
+  function revalidateConfig(cached) {
+    fetchConfig()
+      .then(function (fresh) {
+        if (!fresh) return;
+
+        writeCachedConfig(fresh);
+
+        if (cached && fresh.version && fresh.version === cached.version) return;
+
+        /* Never while the shopper has the form open. Their totals would change
+         * under them mid-entry, and a fee that appears after they decided to
+         * order is worse than one that appears on their next visit. */
+        if (state.dialogOpen) return;
+
+        log('Config changed since this page loaded, re-rendering');
+        state.config = fresh;
+        render();
+      })
+      .catch(function (error) {
+        /* The page already has a working config. A failed refresh is not worth
+         * disturbing it over. */
+        log('Config revalidation failed', error);
+      });
+  }
+
   function loadConfig() {
     var cached = readCachedConfig();
 
     if (cached) {
       log('Config served from sessionStorage');
+      revalidateConfig(cached);
       return Promise.resolve(cached);
     }
 
