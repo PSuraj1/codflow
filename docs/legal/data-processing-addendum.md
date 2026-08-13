@@ -2,8 +2,8 @@
 
 **CODkar — Cash on Delivery for Shopify**
 
-Last updated: [DATE]
-Between: [COMPANY LEGAL NAME] ("Processor") and the merchant installing CODkar ("Controller")
+Last updated: 13 August 2026
+Between: Identiwitty Media Pvt Ltd ("Processor") and the merchant installing CODkar ("Controller")
 
 > **Draft, not legally reviewed.** Shopify's protected customer data
 > requirements oblige app developers to "establish formal privacy and data
@@ -76,8 +76,8 @@ The Processor will:
 | Sub-processor | Purpose | Data | Location |
 |---|---|---|---|
 | Shopify | Creating the order in the Controller's store | Full order | [REGION] |
-| [HOSTING PROVIDER] | Running the application | All | [REGION] |
-| [DATABASE / CACHE PROVIDER] | Storage and job queue | All | [REGION] |
+| Render Services, Inc. | Running the application | All | [REGION] |
+| Render Services, Inc. | Storage and job queue | All | [REGION] |
 | Google | Exporting orders to the Controller's spreadsheet | Mapped order fields | [REGION] |
 | Meta, TikTok, Google Ads, Snapchat, Pinterest | Conversion reporting | SHA-256 hashed identifiers, order value | [REGION] |
 | [IP INTELLIGENCE PROVIDER] | Fraud signals | IP address | [REGION] |
@@ -128,6 +128,6 @@ Liability under this addendum is subject to the limits in the
 
 ## 10. Contact
 
-[COMPANY LEGAL NAME]
-[REGISTERED ADDRESS]
+Identiwitty Media Pvt Ltd
+Plot No. 4-5, Block B, Lions Enclave, Vikas Nagar, Uttam Nagar, New Delhi, South West Delhi, Delhi 110059, India
 [PRIVACY CONTACT EMAIL]

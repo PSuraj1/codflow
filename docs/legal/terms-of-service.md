@@ -2,8 +2,8 @@
 
 **CODkar — Cash on Delivery for Shopify**
 
-Last updated: [DATE]
-Provided by: [COMPANY LEGAL NAME], [REGISTERED ADDRESS]
+Last updated: 13 August 2026
+Provided by: Identiwitty Media Pvt Ltd, Plot No. 4-5, Block B, Lions Enclave, Vikas Nagar, Uttam Nagar, New Delhi, South West Delhi, Delhi 110059, India
 Contact: [SUPPORT EMAIL]
 
 > **Draft, not legally reviewed.** Every value in [SQUARE BRACKETS] must be
@@ -70,8 +70,8 @@ Billing is handled by Shopify, charged to your Shopify invoice, in accordance
 with Shopify's own billing terms.
 
 - Plans and their limits are described in the app under **Plan and usage**.
-- Charges are [BILLING PERIOD, e.g. monthly, in advance].
-- A free trial of [TRIAL LENGTH] applies to [WHICH PLANS].
+- Charges are monthly, in advance.
+- A free trial of 3 days applies to the Starter and Pro plans.
 - Usage limits are enforced. Reaching a monthly limit stops the metered action
   until the next period or until you upgrade.
 - **Refunds:** [STATE YOUR REFUND POLICY — for example, no refunds for partial
@@ -144,6 +144,6 @@ These terms are governed by the laws of [JURISDICTION], and the courts of
 
 ## 14. Contact
 
-[COMPANY LEGAL NAME]
-[REGISTERED ADDRESS]
+Identiwitty Media Pvt Ltd
+Plot No. 4-5, Block B, Lions Enclave, Vikas Nagar, Uttam Nagar, New Delhi, South West Delhi, Delhi 110059, India
 [SUPPORT EMAIL]

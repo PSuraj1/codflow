@@ -2,8 +2,8 @@
 
 **CODkar — Cash on Delivery for Shopify**
 
-Last updated: [DATE]
-Published by: [COMPANY LEGAL NAME], [REGISTERED ADDRESS]
+Last updated: 13 August 2026
+Published by: Identiwitty Media Pvt Ltd, Plot No. 4-5, Block B, Lions Enclave, Vikas Nagar, Uttam Nagar, New Delhi, South West Delhi, Delhi 110059, India
 Contact: [PRIVACY CONTACT EMAIL]
 
 > **This is a draft prepared from what the application actually does. It has not
@@ -114,8 +114,8 @@ has connected.
 | Sub-processor | What reaches them | When |
 |---|---|---|
 | Shopify | The full order, to create it in the merchant's store | Always |
-| [HOSTING PROVIDER] | All data, as the platform it runs on | Always |
-| [DATABASE / CACHE HOST] | All data at rest and in the job queue | Always |
+| Render Services, Inc. | All data, as the platform it runs on | Always |
+| Render Services, Inc. | All data at rest and in the job queue | Always |
 | Google (Sheets and Drive) | The order fields the merchant maps to columns | Only if the merchant connects Google Sheets |
 | Meta, TikTok, Google Ads, Snapchat, Pinterest | **SHA-256 hashes only** of email, phone, name, city, state, postal code, country — never the values themselves — plus the order value and a deduplication identifier | Only if the merchant configures that pixel with server-side sending |
 | [IP INTELLIGENCE PROVIDER] | IP address | Only if the deployment has one configured |
@@ -195,8 +195,8 @@ notified to merchants by email before they take effect.
 
 ## Contact
 
-[COMPANY LEGAL NAME]
-[REGISTERED ADDRESS]
+Identiwitty Media Pvt Ltd
+Plot No. 4-5, Block B, Lions Enclave, Vikas Nagar, Uttam Nagar, New Delhi, South West Delhi, Delhi 110059, India
 [PRIVACY CONTACT EMAIL]
 
 [IF APPLICABLE: EU/UK representative and Data Protection Officer details.]
