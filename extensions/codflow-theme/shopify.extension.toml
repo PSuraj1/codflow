@@ -1,4 +1,4 @@
-# CodFlow — theme app extension
+# CODkar — theme app extension
 #
 # Delivers the storefront half of the app: the COD button, and the container the
 # COD form renders into. Theme app extensions are the only supported way to add
@@ -24,6 +24,6 @@ api_version = "2026-07"
 
 [[extensions]]
 type = "theme"
-name = "CodFlow — Cash on Delivery"
+name = "CODkar — Cash on Delivery"
 handle = "codflow-theme"
 uid = "65700e1b-adb2-4770-3a7e-0774db8cda7c073aea68"
