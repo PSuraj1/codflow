@@ -98,3 +98,31 @@ export function landing(req: Request, res: Response, next: NextFunction): void {
   res.setHeader('Cache-Control', 'public, max-age=300');
   res.send(HTML);
 }
+
+/**
+ * `GET /robots.txt`.
+ *
+ * Without this the SPA catch-all answers it with the admin's `index.html` — a
+ * crawler asking for a robots file receives an HTML document. Most parsers treat
+ * that as "no rules" and carry on, but it is an odd signal to send a verifier
+ * that is deciding whether it can read the site, and this app has one waiting
+ * on exactly that question.
+ *
+ * What it permits is deliberate: the pages meant to be read by people and
+ * indexed — the landing page, the policies, the FAQ — and nothing else. The
+ * admin routes below `/api` and the client-side screens are useless to a
+ * crawler and would be dead entries in an index.
+ */
+const ROBOTS = `User-agent: *
+Allow: /$
+Allow: /legal/
+Allow: /help/
+Disallow: /api/
+Disallow: /assets/
+`;
+
+export function robots(_req: Request, res: Response): void {
+  res.type('text/plain');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.send(ROBOTS);
+}

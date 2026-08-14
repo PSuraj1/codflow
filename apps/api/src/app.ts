@@ -14,7 +14,7 @@ import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import { webhookRouter } from './modules/webhooks/routes';
 import { apiRouter } from './routes';
 import { helpRouter, legalRouter } from './modules/legal/routes';
-import { landing } from './modules/home/controller';
+import { landing, robots } from './modules/home/controller';
 
 const log = createLogger('app');
 
@@ -77,6 +77,7 @@ export function createApp(): Express {
   // ---- The public landing page. Before `mountAdmin` because it claims `/`
   // for requests that are not Shopify, and hands every other one straight back.
   app.get('/', landing);
+  app.get('/robots.txt', robots);
 
   // ---- The embedded admin SPA.
   mountAdmin(app);

@@ -105,3 +105,29 @@ describe('merchants still reach the app', () => {
     expect(response.status).toBe(302);
   });
 });
+
+describe('robots.txt', () => {
+  it('is a robots file, not the admin shell', async () => {
+    // The SPA catch-all answered this with index.html — a crawler asking for
+    // robots rules received a full HTML document.
+    const response = await server.request('/robots.txt');
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toMatch(/text\/plain/);
+    expect(String(response.body)).not.toContain('<html');
+  });
+
+  it('lets crawlers reach the pages meant for people', async () => {
+    const body = String((await server.request('/robots.txt')).body);
+
+    expect(body).toMatch(/^User-agent: \*/m);
+    expect(body).toMatch(/Allow: \/legal\//m);
+    expect(body).toMatch(/Allow: \/help\//m);
+  });
+
+  it('keeps them out of the API', async () => {
+    const body = String((await server.request('/robots.txt')).body);
+
+    expect(body).toMatch(/Disallow: \/api\//m);
+  });
+});
