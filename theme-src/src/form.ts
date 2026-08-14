@@ -530,8 +530,6 @@ class CodFormController {
    */
   private readonly selectedBumps = new Set<string>();
 
-  /** Whether the merchant's default ticks have been applied. Applied once. */
-  private bumpsSeeded = false;
   private readonly formToken: string;
   private readonly root: HTMLElement;
 
@@ -662,8 +660,6 @@ class CodFormController {
     const list = el('div', { class: 'codflow-bumps', 'data-codflow-bumps': '' });
 
     for (const bump of this.config.bumps) {
-      if (bump.defaultChecked && !this.bumpsSeeded) this.selectedBumps.add(bump.id);
-
       const id = `codflow-bump-${bump.id}`;
       const input = el('input', {
         type: 'checkbox',
@@ -697,7 +693,6 @@ class CodFormController {
       );
     }
 
-    this.bumpsSeeded = true;
     return list;
   }
 

@@ -46,12 +46,25 @@ describe('title', () => {
 });
 
 describe('defaults', () => {
-  it('is shown and unticked unless the merchant says otherwise', () => {
+  it('is shown unless the merchant says otherwise', () => {
     const parsed = CreateOrderBumpSchema.safeParse(bump());
 
     expect(parsed.success && parsed.data.isEnabled).toBe(true);
-    // Pre-ticking a paid extra is a dark pattern; it must be opted into.
-    expect(parsed.success && parsed.data.defaultChecked).toBe(false);
+  });
+
+  /**
+   * App Store requirement 1.1.9: an app "can't automatically add or pre-select
+   * optional charges to a buyer's cart that increase the total checkout price."
+   *
+   * A bump used to carry `defaultChecked`, which did exactly that. The schema
+   * strips unknown keys, so a stored payload from before the removal — or a
+   * client still sending it — cannot bring the behaviour back.
+   */
+  it('refuses to carry a pre-tick flag at all', () => {
+    const parsed = CreateOrderBumpSchema.safeParse({ ...bump(), defaultChecked: true });
+
+    expect(parsed.success).toBe(true);
+    expect(parsed.success && 'defaultChecked' in parsed.data).toBe(false);
   });
 });
 

@@ -79,7 +79,6 @@ export function OrderBumpsPage() {
             price: '49',
             isEnabled: true,
             position: bumps.length,
-            defaultChecked: false,
           }),
       }}
     >
@@ -109,7 +108,6 @@ export function OrderBumpsPage() {
                         price: '49',
                         isEnabled: true,
                         position: 0,
-                        defaultChecked: false,
                       }),
                   }}
                 >
@@ -186,13 +184,6 @@ function BumpCard({ bump, currency }: { bump: OrderBumpSummary; currency: string
           maxLength={200}
           multiline={2}
           helpText="Optional. A line explaining what they get."
-        />
-
-        <Checkbox
-          label="Ticked by default"
-          checked={draft.defaultChecked}
-          onChange={(defaultChecked) => patch({ defaultChecked })}
-          helpText="Pre-ticking a paid extra counts as a dark pattern in several countries, and Shopify's review team looks for it. Leave it off unless you are certain."
         />
 
         <InlineStack align="space-between">

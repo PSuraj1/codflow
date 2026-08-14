@@ -277,9 +277,9 @@ model Session {
 // ============================================================================
 
 model Shop {
-  id       String @id @default(cuid())
+  id         String  @id @default(cuid())
   /// myshopify.com domain. The canonical tenant key.
-  domain   String @unique
+  domain     String  @unique
   /// Shopify's numeric shop GID suffix, captured on install.
   shopifyGid String? @unique
 
@@ -310,30 +310,30 @@ model Shop {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  settings        ShopSettings?
-  subscription    Subscription?
-  formConfigs     FormConfig[]
-  buttonConfigs   ButtonConfig[]
-  orderBumps      OrderBump[]
-  codOrders       CodOrder[]
-  googleAccount   GoogleAccount?
-  sheetConfigs    SheetConfig[]
-  sheetSyncLogs   SheetSyncLog[]
-  pixels          Pixel[]
-  pixelEvents     PixelEvent[]
-  fraudSettings   FraudSettings?
-  fraudRules      FraudRule[]
-  riskAssessments RiskAssessment[]
-  blockListEntries BlockListEntry[]
-  otpSettings     OtpSettings?
-  otpVerifications OtpVerification[]
-  automations     Automation[]
-  automationRuns  AutomationRun[]
+  settings              ShopSettings?
+  subscription          Subscription?
+  formConfigs           FormConfig[]
+  buttonConfigs         ButtonConfig[]
+  orderBumps            OrderBump[]
+  codOrders             CodOrder[]
+  googleAccount         GoogleAccount?
+  sheetConfigs          SheetConfig[]
+  sheetSyncLogs         SheetSyncLog[]
+  pixels                Pixel[]
+  pixelEvents           PixelEvent[]
+  fraudSettings         FraudSettings?
+  fraudRules            FraudRule[]
+  riskAssessments       RiskAssessment[]
+  blockListEntries      BlockListEntry[]
+  otpSettings           OtpSettings?
+  otpVerifications      OtpVerification[]
+  automations           Automation[]
+  automationRuns        AutomationRun[]
   notificationTemplates NotificationTemplate[]
-  auditLogs       AuditLog[]
-  dailyStats      DailyStat[]
-  usageRecords    UsageRecord[]
-  webhookEvents   WebhookEvent[]
+  auditLogs             AuditLog[]
+  dailyStats            DailyStat[]
+  usageRecords          UsageRecord[]
+  webhookEvents         WebhookEvent[]
 
   @@index([isActive])
   @@index([installedAt])
@@ -351,14 +351,14 @@ model ShopSettings {
   shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   // --- General
-  codEnabled            Boolean @default(true)
+  codEnabled             Boolean  @default(true)
   /// Hide native Add To Cart / Buy Now and drive all conversion through COD.
-  replaceAddToCart      Boolean @default(false)
-  replaceBuyNow         Boolean @default(true)
-  enabledOnAllProducts  Boolean @default(true)
+  replaceAddToCart       Boolean  @default(false)
+  replaceBuyNow          Boolean  @default(true)
+  enabledOnAllProducts   Boolean  @default(true)
   /// Shopify product GIDs. Applied when enabledOnAllProducts is false.
-  includedProductGids   String[] @default([])
-  excludedProductGids   String[] @default([])
+  includedProductGids    String[] @default([])
+  excludedProductGids    String[] @default([])
   includedCollectionGids String[] @default([])
 
   // --- COD economics
@@ -372,20 +372,20 @@ model ShopSettings {
 
   // --- Order handling
   /// Tags applied to every COD order pushed to Shopify.
-  defaultOrderTags   String[] @default(["COD", "CodFlow"])
+  defaultOrderTags             String[] @default(["COD", "CodFlow"])
   /// Create as draft order first, then complete. Safer for fraud review flows.
-  createAsDraftOrder Boolean  @default(false)
-  autoFulfill        Boolean  @default(false)
-  markAsPaid         Boolean  @default(false)
-  inventoryBehaviour String   @default("decrement_obeying_policy")
-  sendShopifyOrderConfirmation Boolean @default(true)
+  createAsDraftOrder           Boolean  @default(false)
+  autoFulfill                  Boolean  @default(false)
+  markAsPaid                   Boolean  @default(false)
+  inventoryBehaviour           String   @default("decrement_obeying_policy")
+  sendShopifyOrderConfirmation Boolean  @default(true)
 
   // --- Branding
-  brandPrimaryColor   String  @default("#008060")
-  brandSecondaryColor String  @default("#004C3F")
-  brandTextColor      String  @default("#202223")
-  brandFontFamily     String  @default("inherit")
-  brandBorderRadius   Int     @default(8)
+  brandPrimaryColor   String    @default("#008060")
+  brandSecondaryColor String    @default("#004C3F")
+  brandTextColor      String    @default("#202223")
+  brandFontFamily     String    @default("inherit")
+  brandBorderRadius   Int       @default(8)
   brandLogoUrl        String?
   /// Rendered height of the logo in the form dialog, in pixels.
   ///
@@ -393,26 +393,26 @@ model ShopSettings {
   /// aspect ratios, and constraining the height is what makes a row of them
   /// look consistent. The width follows from `object-fit: contain`, bounded by
   /// the dialog so a wide banner cannot push the close button off it.
-  brandLogoHeight     Int     @default(40)
+  brandLogoHeight     Int       @default(40)
   /// `left` | `center` | `right`. Validated in `shop/dto.ts`, not by an enum,
   /// matching how `inventoryBehaviour` and `FormConfig.layout` are stored.
-  brandLogoAlignment  String  @default("left")
+  brandLogoAlignment  String    @default("left")
   customCss           String?
   themeMode           ThemeMode @default(SYSTEM)
 
   // --- Localization
-  defaultLocale     Locale   @default(EN)
-  enabledLocales    Locale[] @default([EN])
+  defaultLocale  Locale   @default(EN)
+  enabledLocales Locale[] @default([EN])
   /// Force RTL layout regardless of locale detection.
-  forceRtl          Boolean  @default(false)
-  currencyFormat    String   @default("{{amount}} {{currency}}")
-  dateFormat        String   @default("YYYY-MM-DD")
+  forceRtl       Boolean  @default(false)
+  currencyFormat String   @default("{{amount}} {{currency}}")
+  dateFormat     String   @default("YYYY-MM-DD")
 
   // --- Geography
-  allowedCountryCodes    String[] @default([])
-  blockedCountryCodes    String[] @default([])
-  allowedPostalPatterns  String[] @default([])
-  blockedPostalPatterns  String[] @default([])
+  allowedCountryCodes   String[] @default([])
+  blockedCountryCodes   String[] @default([])
+  allowedPostalPatterns String[] @default([])
+  blockedPostalPatterns String[] @default([])
 
   // --- Data retention
   /// Days a shopper's personal fields survive on an order before the retention
@@ -423,14 +423,14 @@ model ShopSettings {
   /// left open. What the sweep clears is the *personal* columns only; amounts,
   /// timestamps and product ids stay, so a merchant's revenue history does not
   /// change underneath them. See `jobs/enforceRetention.ts`.
-  orderRetentionDays     Int     @default(365)
+  orderRetentionDays Int @default(365)
 
   // --- Notifications
-  notifyEmail            String?
-  notifyOnNewOrder       Boolean @default(true)
-  notifyOnHighRisk       Boolean @default(true)
-  notifyOnSyncFailure    Boolean @default(true)
-  customerEmailEnabled   Boolean @default(false)
+  notifyEmail          String?
+  notifyOnNewOrder     Boolean @default(true)
+  notifyOnHighRisk     Boolean @default(true)
+  notifyOnSyncFailure  Boolean @default(true)
+  customerEmailEnabled Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -447,37 +447,37 @@ model FormConfig {
   shopId String
   shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
-  name        String  @default("Default COD Form")
+  name      String  @default("Default COD Form")
   /// Only one form per shop may be active at a time; enforced in the service layer.
-  isActive    Boolean @default(true)
-  isDefault   Boolean @default(false)
+  isActive  Boolean @default(true)
+  isDefault Boolean @default(false)
 
   // --- Copy (localizable via NotificationTemplate-style JSON keyed by locale)
-  headingText     String  @default("Cash On Delivery")
-  subheadingText  String?
-  submitButtonText String @default("Place Order")
-  successMessage  String  @default("Thank you! Your order has been placed.")
+  headingText      String  @default("Cash On Delivery")
+  subheadingText   String?
+  submitButtonText String  @default("Place Order")
+  successMessage   String  @default("Thank you! Your order has been placed.")
   /// { "hi": { "headingText": "..." }, "ar": { ... } }
-  translations    Json    @default("{}")
+  translations     Json    @default("{}")
 
   // --- Layout
-  layout          String  @default("single_column")
-  showOrderSummary Boolean @default(true)
-  showProductImage Boolean @default(true)
+  layout               String  @default("single_column")
+  showOrderSummary     Boolean @default(true)
+  showProductImage     Boolean @default(true)
   showQuantitySelector Boolean @default(true)
   showVariantSelector  Boolean @default(true)
-  showCouponField  Boolean @default(false)
-  showTermsCheckbox Boolean @default(false)
-  termsUrl         String?
+  showCouponField      Boolean @default(false)
+  showTermsCheckbox    Boolean @default(false)
+  termsUrl             String?
 
   // --- Behaviour
-  requireOtp       Boolean @default(false)
+  requireOtp              Boolean @default(false)
   /// Persist partially-filled forms so they surface as abandoned COD in analytics.
-  trackAbandonment Boolean @default(true)
-  abandonmentDelaySeconds Int @default(30)
+  trackAbandonment        Boolean @default(true)
+  abandonmentDelaySeconds Int     @default(30)
   /// Honeypot + timing checks against bots.
-  botProtection    Boolean @default(true)
-  minFillSeconds   Int     @default(3)
+  botProtection           Boolean @default(true)
+  minFillSeconds          Int     @default(3)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -495,32 +495,32 @@ model FormField {
   formConfig   FormConfig @relation(fields: [formConfigId], references: [id], onDelete: Cascade)
 
   /// Stable machine key used as the payload property and the Sheets column key.
-  key       String
-  type      FormFieldType
-  label     String
+  key         String
+  type        FormFieldType
+  label       String
   placeholder String?
-  helpText  String?
+  helpText    String?
   /// Ordering for the drag-and-drop builder. Gaps are fine; sort ascending.
-  position  Int
+  position    Int
 
-  isRequired  Boolean @default(false)
-  isEnabled   Boolean @default(true)
+  isRequired   Boolean @default(false)
+  isEnabled    Boolean @default(true)
   /// Merchant may not delete core fields (phone, name) — only reorder/relabel.
-  isSystem    Boolean @default(false)
+  isSystem     Boolean @default(false)
   defaultValue String?
   /// Rendered but not shown; used for attribution values (utm, ref).
-  isHidden    Boolean @default(false)
+  isHidden     Boolean @default(false)
 
   // --- Validation
-  minLength   Int?
-  maxLength   Int?
-  minValue    Decimal? @db.Decimal(12, 2)
-  maxValue    Decimal? @db.Decimal(12, 2)
+  minLength         Int?
+  maxLength         Int?
+  minValue          Decimal? @db.Decimal(12, 2)
+  maxValue          Decimal? @db.Decimal(12, 2)
   /// JS-compatible regex source, validated server-side before persisting.
-  regexPattern String?
+  regexPattern      String?
   validationMessage String?
   /// For SELECT/RADIO/MULTISELECT: [{ "label": "...", "value": "..." }]
-  options     Json     @default("[]")
+  options           Json     @default("[]")
 
   // --- Conditional visibility
   /// Show this field only when the referenced field matches.
@@ -528,9 +528,9 @@ model FormField {
   conditionalOn Json?
 
   // --- Presentation
-  columnWidth Int    @default(12)
-  cssClass    String?
-  translations Json  @default("{}")
+  columnWidth  Int     @default(12)
+  cssClass     String?
+  translations Json    @default("{}")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -550,23 +550,23 @@ model ButtonConfig {
   shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   placement ButtonPlacement
-  isEnabled Boolean @default(true)
+  isEnabled Boolean         @default(true)
 
-  label       String  @default("Order Now — Cash On Delivery")
-  subLabel    String?
-  iconName    String?
-  translations Json   @default("{}")
+  label        String  @default("Order Now — Cash On Delivery")
+  subLabel     String?
+  iconName     String?
+  translations Json    @default("{}")
 
-  bgColor     String  @default("#008060")
-  textColor   String  @default("#FFFFFF")
-  borderColor String  @default("#008060")
-  borderRadius Int    @default(8)
-  fontSize    Int     @default(16)
-  fontWeight  String  @default("600")
-  paddingY    Int     @default(14)
-  paddingX    Int     @default(24)
-  fullWidth   Boolean @default(true)
-  customCss   String?
+  bgColor      String  @default("#008060")
+  textColor    String  @default("#FFFFFF")
+  borderColor  String  @default("#008060")
+  borderRadius Int     @default(8)
+  fontSize     Int     @default(16)
+  fontWeight   String  @default("600")
+  paddingY     Int     @default(14)
+  paddingX     Int     @default(24)
+  fullWidth    Boolean @default(true)
+  customCss    String?
 
   // Placement-specific knobs
   stickyOffsetBottom Int     @default(0)
@@ -601,16 +601,16 @@ model CodOrder {
   status CodOrderStatus @default(DRAFT)
 
   // --- Shopify linkage (null until pushed)
-  shopifyOrderGid    String?  @unique
-  shopifyOrderNumber String?
+  shopifyOrderGid      String?   @unique
+  shopifyOrderNumber   String?
   /// Shopify's own order-status page. Carries a token that cannot be derived
   /// from the order id, so it is captured at completion or lost.
-  orderStatusUrl     String?
-  shopifyDraftOrderGid String? @unique
-  shopifyCustomerGid String?
-  pushedAt           DateTime?
-  pushAttempts       Int      @default(0)
-  pushError          String?
+  orderStatusUrl       String?
+  shopifyDraftOrderGid String?   @unique
+  shopifyCustomerGid   String?
+  pushedAt             DateTime?
+  pushAttempts         Int       @default(0)
+  pushError            String?
 
   // --- Customer
   firstName String?
@@ -621,16 +621,16 @@ model CodOrder {
   phoneE164 String?
 
   // --- Address
-  address1   String?
-  address2   String?
-  city       String?
-  province   String?
+  address1     String?
+  address2     String?
+  city         String?
+  province     String?
   provinceCode String?
-  country    String?
-  countryCode String?
-  postalCode String?
+  country      String?
+  countryCode  String?
+  postalCode   String?
   /// Normalized lowercase address digest for duplicate-address fraud checks.
-  addressHash String?
+  addressHash  String?
 
   orderNotes String?
 
@@ -638,40 +638,40 @@ model CodOrder {
   /// [{ id, title, price }] — a snapshot, so a merchant editing or deleting a
   /// bump later does not rewrite what an existing order charged.
   selectedBumps Json    @default("[]")
-  bumpTotal     Decimal @db.Decimal(12, 2) @default(0)
+  bumpTotal     Decimal @default(0) @db.Decimal(12, 2)
 
   // --- Cart
   /// [{ variantGid, productGid, title, variantTitle, sku, quantity, price, image }]
-  lineItems Json
-  currency  String  @default("USD")
-  subtotal  Decimal @db.Decimal(12, 2) @default(0)
-  shippingFee Decimal @db.Decimal(12, 2) @default(0)
-  codFee    Decimal @db.Decimal(12, 2) @default(0)
-  discount  Decimal @db.Decimal(12, 2) @default(0)
-  taxAmount Decimal @db.Decimal(12, 2) @default(0)
-  total     Decimal @db.Decimal(12, 2) @default(0)
+  lineItems    Json
+  currency     String  @default("USD")
+  subtotal     Decimal @default(0) @db.Decimal(12, 2)
+  shippingFee  Decimal @default(0) @db.Decimal(12, 2)
+  codFee       Decimal @default(0) @db.Decimal(12, 2)
+  discount     Decimal @default(0) @db.Decimal(12, 2)
+  taxAmount    Decimal @default(0) @db.Decimal(12, 2)
+  total        Decimal @default(0) @db.Decimal(12, 2)
   discountCode String?
 
   /// Values captured from custom/hidden form fields, keyed by FormField.key.
   customFields Json @default("{}")
 
   // --- Attribution & device
-  ipAddress   String?
-  userAgent   String?
-  referrer    String?
-  landingPage String?
-  utmSource   String?
-  utmMedium   String?
-  utmCampaign String?
-  utmTerm     String?
-  utmContent  String?
+  ipAddress         String?
+  userAgent         String?
+  referrer          String?
+  landingPage       String?
+  utmSource         String?
+  utmMedium         String?
+  utmCampaign       String?
+  utmTerm           String?
+  utmContent        String?
   deviceFingerprint String?
   /// Web pixel / analytics correlation ids for deduplicated server-side events.
-  clientId    String?
-  fbp         String?
-  fbc         String?
-  ttclid      String?
-  gclid       String?
+  clientId          String?
+  fbp               String?
+  fbc               String?
+  ttclid            String?
+  gclid             String?
 
   // --- Consent (drives whether server-side pixel events may fire)
   marketingConsent  Boolean @default(false)
@@ -687,13 +687,13 @@ model CodOrder {
   profilingOptOut Boolean @default(false)
 
   // --- Risk (denormalized from the latest RiskAssessment for fast filtering)
-  riskScore Int        @default(0)
-  riskLevel RiskLevel  @default(LOW)
+  riskScore  Int        @default(0)
+  riskLevel  RiskLevel  @default(LOW)
   riskAction RiskAction @default(ALLOW)
 
   // --- OTP
-  otpRequired Boolean   @default(false)
-  otpVerified Boolean   @default(false)
+  otpRequired   Boolean   @default(false)
+  otpVerified   Boolean   @default(false)
   otpVerifiedAt DateTime?
 
   // --- Sync
@@ -701,7 +701,7 @@ model CodOrder {
   sheetSyncedAt   DateTime?
 
   // --- Merchant workflow
-  isArchived   Boolean @default(false)
+  isArchived   Boolean  @default(false)
   internalNote String?
   tags         String[] @default([])
 
@@ -710,21 +710,21 @@ model CodOrder {
   /// it from re-examining every historic order every night.
   redactedAt DateTime?
 
-  cancelledAt DateTime?
+  cancelledAt  DateTime?
   cancelReason String?
-  fulfilledAt DateTime?
-  returnedAt  DateTime?
-  refundedAt  DateTime?
+  fulfilledAt  DateTime?
+  returnedAt   DateTime?
+  refundedAt   DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  riskAssessments RiskAssessment[]
+  riskAssessments  RiskAssessment[]
   otpVerifications OtpVerification[]
-  sheetSyncLogs   SheetSyncLog[]
-  pixelEvents     PixelEvent[]
-  timeline        CodOrderEvent[]
-  automationRuns  AutomationRun[]
+  sheetSyncLogs    SheetSyncLog[]
+  pixelEvents      PixelEvent[]
+  timeline         CodOrderEvent[]
+  automationRuns   AutomationRun[]
 
   @@index([shopId, status])
   @@index([shopId, createdAt])
@@ -751,9 +751,9 @@ model CodOrderEvent {
   type    String
   message String
   /// Arbitrary structured detail for rendering rich timeline entries.
-  data    Json     @default("{}")
+  data    Json    @default("{}")
   /// "system" | "merchant" | "customer" | "shopify"
-  actor   String   @default("system")
+  actor   String  @default("system")
   actorId String?
 
   createdAt DateTime @default(now())
@@ -784,13 +784,9 @@ model OrderBump {
   /// Added to the order total once, whatever the cart contains.
   price       Decimal @db.Decimal(12, 2)
 
-  isEnabled   Boolean @default(true)
+  isEnabled Boolean @default(true)
   /// Order the bumps appear in on the form. Lowest first.
-  position    Int     @default(0)
-  /// Ticked when the form first renders. A merchant may pre-select an add-on,
-  /// and the shopper can always untick it — but see the admin copy: pre-ticking
-  /// a paid extra is a dark pattern in several jurisdictions.
-  defaultChecked Boolean @default(false)
+  position  Int     @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -819,11 +815,11 @@ model GoogleAccount {
   tokenExpiresAt  DateTime
   scopes          String[] @default([])
 
-  isActive     Boolean   @default(true)
+  isActive        Boolean   @default(true)
   lastRefreshedAt DateTime?
   /// Set when Google returns invalid_grant so the UI can prompt a reconnect.
-  revokedAt    DateTime?
-  lastError    String?
+  revokedAt       DateTime?
+  lastError       String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -842,12 +838,12 @@ model SheetConfig {
   googleAccountId String
   googleAccount   GoogleAccount @relation(fields: [googleAccountId], references: [id], onDelete: Cascade)
 
-  spreadsheetId  String
+  spreadsheetId   String
   spreadsheetName String?
-  spreadsheetUrl String?
+  spreadsheetUrl  String?
   /// Worksheet tab name. Created automatically when missing.
-  worksheetName  String  @default("CodFlow Orders")
-  worksheetGid   Int?
+  worksheetName   String  @default("CodFlow Orders")
+  worksheetGid    Int?
 
   isActive       Boolean @default(true)
   autoSync       Boolean @default(true)
@@ -884,9 +880,9 @@ model SheetConfig {
   lastSyncStatus SyncStatus?
   lastError      String?
   /// Next spreadsheet row to write when writeMode is "append".
-  nextRow        Int      @default(2)
-  totalSynced    Int      @default(0)
-  totalFailed    Int      @default(0)
+  nextRow        Int         @default(2)
+  totalSynced    Int         @default(0)
+  totalFailed    Int         @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -912,15 +908,15 @@ model SheetSyncLog {
   status  SyncStatus
   trigger SyncTrigger
 
-  rowNumber   Int?
+  rowNumber    Int?
   /// The exact values written, for audit and replay.
-  payload     Json?
+  payload      Json?
   errorMessage String?
-  errorCode   String?
-  attempt     Int     @default(1)
-  durationMs  Int?
+  errorCode    String?
+  attempt      Int     @default(1)
+  durationMs   Int?
   /// BullMQ job id, so a failed sync can be traced to its queue entry.
-  jobId       String?
+  jobId        String?
 
   createdAt DateTime @default(now())
 
@@ -940,11 +936,11 @@ model Pixel {
   shopId String
   shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
-  provider PixelProvider
-  label    String
+  provider  PixelProvider
+  label     String
   /// Pixel/dataset/tag id as the provider expects it.
-  pixelId  String
-  isEnabled Boolean @default(true)
+  pixelId   String
+  isEnabled Boolean       @default(true)
 
   // --- Server-side (Conversions API / Events API)
   serverSideEnabled Boolean @default(false)
@@ -974,10 +970,10 @@ model Pixel {
   /// Respect Shopify customer privacy consent before firing.
   requireConsent Boolean @default(true)
 
-  lastEventAt   DateTime?
-  totalSent     Int      @default(0)
-  totalFailed   Int      @default(0)
-  lastError     String?
+  lastEventAt DateTime?
+  totalSent   Int       @default(0)
+  totalFailed Int       @default(0)
+  lastError   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1000,13 +996,13 @@ model PixelEvent {
   codOrderId String?
   codOrder   CodOrder? @relation(fields: [codOrderId], references: [id], onDelete: SetNull)
 
-  eventName   PixelEventName
+  eventName       PixelEventName
   customEventName String?
   /// Shared id across client and server transmissions for deduplication.
-  eventId     String
-  status      PixelDispatchStatus @default(PENDING)
+  eventId         String
+  status          PixelDispatchStatus @default(PENDING)
   /// "client" | "server"
-  source      String
+  source          String
 
   payload      Json?
   responseCode Int?
@@ -1077,8 +1073,8 @@ model FraudSettings {
   highRiskCountryCodes String[] @default([])
 
   // --- Third-party IP intelligence (optional; encrypted)
-  ipIntelProvider   String?
-  ipIntelApiKeyEnc  String?
+  ipIntelProvider  String?
+  ipIntelApiKeyEnc String?
 
   /// Auto-blacklist a phone after this many cancelled/returned COD orders. 0 = off.
   /// Combined quantity across every line. 0 disables the check — a limit of
@@ -1094,10 +1090,10 @@ model FraudSettings {
   /// Never append the reason to this — see `orders/service.ts`.
   blockedMessage String?
 
-  autoBlacklistAfterFailures Int @default(0)
+  autoBlacklistAfterFailures Int     @default(0)
   /// Tag high-risk orders in Shopify instead of blocking.
-  tagHighRiskOrders Boolean @default(true)
-  highRiskTag       String  @default("CodFlow-High-Risk")
+  tagHighRiskOrders          Boolean @default(true)
+  highRiskTag                String  @default("CodFlow-High-Risk")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1120,13 +1116,13 @@ model FraudRule {
   ///            { "field": "countryCode", "operator": "in", "value": ["XX"] }] }
   conditions Json
   /// Points added to the risk score when conditions match.
-  scoreDelta Int        @default(0)
+  scoreDelta Int         @default(0)
   /// Overrides the threshold-derived action when set.
   action     RiskAction?
   /// Shown to the merchant in the risk breakdown.
   reason     String?
 
-  matchCount   Int       @default(0)
+  matchCount    Int       @default(0)
   lastMatchedAt DateTime?
 
   createdAt DateTime @default(now())
@@ -1158,16 +1154,16 @@ model RiskAssessment {
   matchedRuleIds String[] @default([])
 
   // Enrichment snapshot, kept for audit even if the provider later changes.
-  ipCountryCode String?
-  ipIsVpn       Boolean?
-  ipIsProxy     Boolean?
-  ipIsTor       Boolean?
-  ipIsHosting   Boolean?
+  ipCountryCode     String?
+  ipIsVpn           Boolean?
+  ipIsProxy         Boolean?
+  ipIsTor           Boolean?
+  ipIsHosting       Boolean?
   ipReputationScore Int?
   emailIsDisposable Boolean?
-  phoneIsValid  Boolean?
-  phoneCarrier  String?
-  phoneLineType String?
+  phoneIsValid      Boolean?
+  phoneCarrier      String?
+  phoneLineType     String?
 
   /// Merchant override of the automated decision.
   reviewedAt     DateTime?
@@ -1198,13 +1194,13 @@ model BlockListEntry {
 
   reason    String?
   /// "merchant" | "system" | "import"
-  createdBy String  @default("merchant")
+  createdBy String    @default("merchant")
   /// Null = permanent.
   expiresAt DateTime?
-  isActive  Boolean @default(true)
+  isActive  Boolean   @default(true)
 
-  hitCount   Int       @default(0)
-  lastHitAt  DateTime?
+  hitCount  Int       @default(0)
+  lastHitAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1224,38 +1220,38 @@ model OtpSettings {
   shopId String @unique
   shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
-  isEnabled Boolean     @default(false)
-  provider  OtpProvider @default(MSG91)
+  isEnabled        Boolean      @default(false)
+  provider         OtpProvider  @default(MSG91)
   /// Fall back to this provider when the primary send fails.
   fallbackProvider OtpProvider?
 
   /// Always require OTP, vs only when the fraud engine returns CHALLENGE_OTP.
   alwaysRequire Boolean @default(false)
 
-  codeLength   Int @default(6)
+  codeLength            Int    @default(6)
   /// "numeric" | "alphanumeric"
-  codeType     String @default("numeric")
-  expirySeconds Int @default(300)
-  maxAttempts  Int @default(5)
-  resendCooldownSeconds Int @default(30)
-  maxResends   Int @default(3)
+  codeType              String @default("numeric")
+  expirySeconds         Int    @default(300)
+  maxAttempts           Int    @default(5)
+  resendCooldownSeconds Int    @default(30)
+  maxResends            Int    @default(3)
 
-  messageTemplate String @default("Your {{shop}} verification code is {{code}}. Valid for {{minutes}} minutes.")
+  messageTemplate String  @default("Your {{shop}} verification code is {{code}}. Valid for {{minutes}} minutes.")
   senderId        String?
-  translations    Json   @default("{}")
+  translations    Json    @default("{}")
 
   // --- Provider credentials, AES-256-GCM encrypted.
-  msg91AuthKeyEnc   String?
-  msg91TemplateId   String?
-  twilioAccountSid  String?
-  twilioAuthTokenEnc String?
-  twilioFromNumber  String?
-  twilioServiceSid  String?
-  firebaseProjectId String?
+  msg91AuthKeyEnc           String?
+  msg91TemplateId           String?
+  twilioAccountSid          String?
+  twilioAuthTokenEnc        String?
+  twilioFromNumber          String?
+  twilioServiceSid          String?
+  firebaseProjectId         String?
   firebaseServiceAccountEnc String?
-  whatsappPhoneNumberId String?
-  whatsappTokenEnc  String?
-  whatsappTemplateName String?
+  whatsappPhoneNumberId     String?
+  whatsappTokenEnc          String?
+  whatsappTemplateName      String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1278,7 +1274,7 @@ model OtpVerification {
   codeHash    String
   status      OtpStatus   @default(PENDING)
 
-  attempts   Int @default(0)
+  attempts    Int @default(0)
   maxAttempts Int @default(5)
   resendCount Int @default(0)
 
@@ -1312,21 +1308,21 @@ model Automation {
   shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   name      String
-  isEnabled Boolean @default(true)
+  isEnabled Boolean           @default(true)
   trigger   AutomationTrigger
-  priority  Int     @default(100)
+  priority  Int               @default(100)
 
   /// Optional guard evaluated before actions run. Same shape as FraudRule.conditions.
-  conditions Json?
+  conditions   Json?
   /// Ordered: [{ "type": "ADD_ORDER_TAG", "config": { "tags": ["COD"] } }]
-  actions    Json
+  actions      Json
   /// Delay execution; enqueued with this BullMQ delay.
-  delaySeconds Int @default(0)
+  delaySeconds Int   @default(0)
 
-  runCount    Int       @default(0)
-  lastRunAt   DateTime?
-  failCount   Int       @default(0)
-  lastError   String?
+  runCount  Int       @default(0)
+  lastRunAt DateTime?
+  failCount Int       @default(0)
+  lastError String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1349,13 +1345,13 @@ model AutomationRun {
   codOrderId String?
   codOrder   CodOrder? @relation(fields: [codOrderId], references: [id], onDelete: SetNull)
 
-  status  SyncStatus
-  trigger AutomationTrigger
+  status       SyncStatus
+  trigger      AutomationTrigger
   /// Per-action outcome: [{ "type": "...", "ok": true, "detail": {...} }]
-  results Json    @default("[]")
+  results      Json              @default("[]")
   errorMessage String?
-  durationMs Int?
-  jobId      String?
+  durationMs   Int?
+  jobId        String?
 
   createdAt DateTime @default(now())
 
@@ -1371,16 +1367,16 @@ model NotificationTemplate {
   shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   /// e.g. "cod_order_confirmation", "high_risk_alert"
-  key     String
-  channel NotificationChannel
-  isEnabled Boolean @default(true)
+  key       String
+  channel   NotificationChannel
+  isEnabled Boolean             @default(true)
 
-  subject  String?
-  body     String
+  subject      String?
+  body         String
   /// { "hi": { "subject": "...", "body": "..." } }
-  translations Json @default("{}")
-  fromName String?
-  fromEmail String?
+  translations Json    @default("{}")
+  fromName     String?
+  fromEmail    String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1400,19 +1396,19 @@ model Subscription {
   shopId String @unique
   shop   Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
-  plan   Plan               @default(FREE)
-  status SubscriptionStatus @default(ACTIVE)
+  plan                   Plan               @default(FREE)
+  status                 SubscriptionStatus @default(ACTIVE)
   /// `plan_handle` returned by the managed pricing redirect.
-  planHandle String?
+  planHandle             String?
   /// Partner API AppSubscription GID.
-  shopifySubscriptionGid String? @unique
+  shopifySubscriptionGid String?            @unique
 
   price        Decimal? @db.Decimal(10, 2)
   currencyCode String   @default("USD")
   interval     String   @default("EVERY_30_DAYS")
 
-  trialDays     Int       @default(0)
-  trialEndsAt   DateTime?
+  trialDays          Int       @default(0)
+  trialEndsAt        DateTime?
   currentPeriodStart DateTime?
   currentPeriodEnd   DateTime?
 
@@ -1478,11 +1474,11 @@ model DailyStat {
   fulfilledOrders Int @default(0)
   abandonedOrders Int @default(0)
 
-  revenue         Decimal @db.Decimal(14, 2) @default(0)
-  cancelledValue  Decimal @db.Decimal(14, 2) @default(0)
-  returnedValue   Decimal @db.Decimal(14, 2) @default(0)
-  averageOrderValue Decimal @db.Decimal(12, 2) @default(0)
-  currency        String  @default("USD")
+  revenue           Decimal @default(0) @db.Decimal(14, 2)
+  cancelledValue    Decimal @default(0) @db.Decimal(14, 2)
+  returnedValue     Decimal @default(0) @db.Decimal(14, 2)
+  averageOrderValue Decimal @default(0) @db.Decimal(12, 2)
+  currency          String  @default("USD")
 
   blockedAttempts Int @default(0)
   highRiskOrders  Int @default(0)
@@ -1490,9 +1486,9 @@ model DailyStat {
   otpVerified     Int @default(0)
   otpFailed       Int @default(0)
 
-  sheetSyncSuccess Int @default(0)
-  sheetSyncFailed  Int @default(0)
-  pixelEventsSent  Int @default(0)
+  sheetSyncSuccess  Int @default(0)
+  sheetSyncFailed   Int @default(0)
+  pixelEventsSent   Int @default(0)
   pixelEventsFailed Int @default(0)
 
   /// { "IN": 42, "AE": 7 }
@@ -1516,11 +1512,11 @@ model DailyStat {
 /// Records every received Shopify webhook so replays are idempotent.
 /// `shopifyWebhookId` is unique; a duplicate insert means Shopify retried.
 model WebhookEvent {
-  id     String @id @default(cuid())
+  id     String  @id @default(cuid())
   shopId String?
-  shop   Shop?  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shop   Shop?   @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
-  shopifyWebhookId String  @unique
+  shopifyWebhookId String    @unique
   topic            String
   shopDomain       String
   apiVersion       String?
@@ -1543,12 +1539,12 @@ model WebhookEvent {
 }
 
 model AuditLog {
-  id     String @id @default(cuid())
+  id     String  @id @default(cuid())
   shopId String?
-  shop   Shop?  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shop   Shop?   @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   /// "settings.updated", "blacklist.created", "google.disconnected"
-  action String
+  action   String
   /// Model name the action targeted.
   entity   String?
   entityId String?

@@ -10,7 +10,6 @@ const FIELDS = {
   price: true,
   isEnabled: true,
   position: true,
-  defaultChecked: true,
 } as const;
 
 export function list(shopId: string) {
@@ -25,7 +24,7 @@ export function list(shopId: string) {
 export function listEnabled(shopId: string) {
   return prisma.orderBump.findMany({
     where: { shopId, isEnabled: true },
-    select: { id: true, title: true, description: true, price: true, defaultChecked: true },
+    select: { id: true, title: true, description: true, price: true },
     orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
   });
 }

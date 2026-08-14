@@ -1,0 +1,12 @@
+-- Removes the ability to pre-tick a paid order bump.
+--
+-- Shopify App Store requirement 1.1.9: an app "can't automatically add or
+-- pre-select optional charges to a buyer's cart that increase the total
+-- checkout price." A bump arriving already ticked is exactly that, however
+-- visible the checkbox is — the shopper has to act to *avoid* the charge
+-- rather than to accept it.
+--
+-- Dropped rather than left defaulting to false. A column nothing reads is an
+-- invitation to wire it back up, and this one is a compliance failure the
+-- moment it is honoured again.
+ALTER TABLE "order_bumps" DROP COLUMN IF EXISTS "defaultChecked";

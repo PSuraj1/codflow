@@ -21,7 +21,6 @@ export interface OrderBumpSummary {
   readonly price: string;
   readonly isEnabled: boolean;
   readonly position: number;
-  readonly defaultChecked: boolean;
 }
 
 /** An order bump as the storefront renders it. No merchant-only fields. */
@@ -30,7 +29,6 @@ export interface StorefrontOrderBump {
   readonly title: string;
   readonly description: string | null;
   readonly price: string;
-  readonly defaultChecked: boolean;
 }
 
 /**

@@ -309,7 +309,6 @@ async function buildConfig(shopDomain: string, productId: string | null): Promis
       description: bump.description,
       // Decimal to string, never to a float.
       price: bump.price.toString(),
-      defaultChecked: bump.defaultChecked,
     })),
     branding: toBranding(shop, allowCustomCss),
     localization: toLocalization(shop),

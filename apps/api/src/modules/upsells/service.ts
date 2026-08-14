@@ -19,7 +19,6 @@ function toSummary(row: Row): OrderBumpSummary {
     price: row.price.toString(),
     isEnabled: row.isEnabled,
     position: row.position,
-    defaultChecked: row.defaultChecked,
   };
 }
 
@@ -44,7 +43,6 @@ export async function createBump(
     price: new Prisma.Decimal(input.price),
     isEnabled: input.isEnabled,
     position: input.position,
-    defaultChecked: input.defaultChecked,
   } as never);
 
   await invalidateTag(shopTag(shopDomain));
@@ -65,7 +63,6 @@ export async function updateBump(
     ...(input.price !== undefined ? { price: new Prisma.Decimal(input.price) } : {}),
     ...(input.isEnabled !== undefined ? { isEnabled: input.isEnabled } : {}),
     ...(input.position !== undefined ? { position: input.position } : {}),
-    ...(input.defaultChecked !== undefined ? { defaultChecked: input.defaultChecked } : {}),
   });
 
   if (!row) throw new NotFoundError('Order bump not found');

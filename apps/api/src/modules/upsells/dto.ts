@@ -17,7 +17,6 @@ export const CreateOrderBumpSchema = z.object({
   price: money,
   isEnabled: z.boolean().default(true),
   position: z.number().int().min(0).max(100).default(0),
-  defaultChecked: z.boolean().default(false),
 });
 
 export const UpdateOrderBumpSchema = CreateOrderBumpSchema.partial();
