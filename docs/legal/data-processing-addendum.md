@@ -130,4 +130,4 @@ Liability under this addendum is subject to the limits in the
 
 Identiwitty Media Pvt Ltd
 Plot No. 4-5, Block B, Lions Enclave, Vikas Nagar, Uttam Nagar, New Delhi, South West Delhi, Delhi 110059, India
-[PRIVACY CONTACT EMAIL]
+srk@identiwitty.com

@@ -4,7 +4,7 @@
 
 Last updated: 13 August 2026
 Published by: Identiwitty Media Pvt Ltd, Plot No. 4-5, Block B, Lions Enclave, Vikas Nagar, Uttam Nagar, New Delhi, South West Delhi, Delhi 110059, India
-Contact: [PRIVACY CONTACT EMAIL]
+Contact: srk@identiwitty.com
 
 > **This is a draft prepared from what the application actually does. It has not
 > been reviewed by a lawyer. Every value in [SQUARE BRACKETS] must be filled in,
@@ -177,7 +177,7 @@ requests to the store you ordered from**. They will reach us through Shopify's
 privacy request process, and we action them within the timeframe Shopify
 specifies.
 
-Merchants may contact us directly at [PRIVACY CONTACT EMAIL].
+Merchants may contact us directly at srk@identiwitty.com.
 
 ## Cookies and tracking
 
@@ -197,6 +197,6 @@ notified to merchants by email before they take effect.
 
 Identiwitty Media Pvt Ltd
 Plot No. 4-5, Block B, Lions Enclave, Vikas Nagar, Uttam Nagar, New Delhi, South West Delhi, Delhi 110059, India
-[PRIVACY CONTACT EMAIL]
+srk@identiwitty.com
 
 [IF APPLICABLE: EU/UK representative and Data Protection Officer details.]

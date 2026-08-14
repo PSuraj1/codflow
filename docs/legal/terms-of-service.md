@@ -4,7 +4,7 @@
 
 Last updated: 13 August 2026
 Provided by: Identiwitty Media Pvt Ltd, Plot No. 4-5, Block B, Lions Enclave, Vikas Nagar, Uttam Nagar, New Delhi, South West Delhi, Delhi 110059, India
-Contact: [SUPPORT EMAIL]
+Contact: srk@identiwitty.com
 
 > **Draft, not legally reviewed.** Every value in [SQUARE BRACKETS] must be
 > filled in, and the whole document checked by a lawyer in your jurisdiction
@@ -106,7 +106,7 @@ uninstall, at which point everything belonging to your store is deleted.
 ## 9. Availability and support
 
 We aim to keep the app available but do not commit to an uptime figure unless
-separately agreed in writing. Support is provided at [SUPPORT EMAIL], with a
+separately agreed in writing. Support is provided at srk@identiwitty.com, with a
 target first response of [RESPONSE TIME] during Monday to Saturday,
 10:00-18:00 IST.
 
@@ -147,4 +147,4 @@ have exclusive jurisdiction.
 
 Identiwitty Media Pvt Ltd
 Plot No. 4-5, Block B, Lions Enclave, Vikas Nagar, Uttam Nagar, New Delhi, South West Delhi, Delhi 110059, India
-[SUPPORT EMAIL]
+srk@identiwitty.com

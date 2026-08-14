@@ -4,7 +4,7 @@
 
 ## Getting help
 
-Email [SUPPORT EMAIL]. Target first response: [RESPONSE TIME], Monday to Saturday, 10:00-18:00 IST.
+Email srk@identiwitty.com. Target first response: [RESPONSE TIME], Monday to Saturday, 10:00-18:00 IST.
 
 Tell us your **store domain** and, where it is about a specific order, its
 **CODkar reference** — the `CF-` code shown in the app. That is enough for us
@@ -37,7 +37,7 @@ someone probing the form what to change. The reason is visible to you in the app
 
 ## Reporting a security issue
 
-Email [SECURITY EMAIL] rather than using normal support. Please include enough
+Email srk@identiwitty.com rather than using normal support. Please include enough
 detail to reproduce the issue. We will acknowledge within [SECURITY RESPONSE
 TIME] and will not take action against anyone reporting in good faith.
 
@@ -47,7 +47,7 @@ If you are a **shopper**, contact the store you ordered from. They can action
 access and deletion requests, and those requests reach us automatically through
 Shopify.
 
-If you are a **merchant**, email [PRIVACY CONTACT EMAIL]. See the
+If you are a **merchant**, email srk@identiwitty.com. See the
 [Privacy Policy](privacy).
 
 ## Status and emergencies
