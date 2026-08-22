@@ -16,13 +16,27 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
  *  - Averaging or mis-keying usage so a cap fires at the wrong moment.
  */
 
-const { findByShop, reconcile: repoReconcile, reconcileToFree, usageForPeriod, recordUsage } =
+const {
+  findByShop,
+  reconcile: repoReconcile,
+  reconcileToFree,
+  usageForPeriod,
+  recordUsage,
+  findShopDomain,
+} =
   vi.hoisted(() => ({
     findByShop: vi.fn(),
     reconcile: vi.fn(),
     reconcileToFree: vi.fn(),
     usageForPeriod: vi.fn(),
     recordUsage: vi.fn(),
+    /**
+     * Mocked because the real one reads `prisma.shop`, and the Prisma mock
+     * below is an empty object. Without it `effectivePlan` throws on every
+     * call — which it did, silently, until another suite's mock stopped
+     * leaking into this one and the failures surfaced.
+     */
+    findShopDomain: vi.fn(async () => 'demo.myshopify.com'),
   }));
 
 const { adminGraphql, loadOfflineSession } = vi.hoisted(() => ({
@@ -39,6 +53,7 @@ vi.mock('./repository', async () => {
     reconcileToFree,
     usageForPeriod,
     recordUsage,
+    findShopDomain,
   };
 });
 
@@ -324,5 +339,63 @@ describe('pricingPageUrl', () => {
     expect(service.pricingPageUrl('demo.myshopify.com')).toBe(
       'https://admin.shopify.com/store/demo/charges/codflow/pricing_plans',
     );
+  });
+});
+
+/**
+ * Usage meters on a plan that excludes a feature.
+ *
+ * This cost an App Store submission. `Free` allows zero OTP sends, and
+ * `quantity >= limit` read `0 >= 0` as exhausted — so every free shop opened
+ * Plan and usage to a red "you have reached a monthly limit" banner for a
+ * feature they had never touched. The reviewer saw it, clicked "See plans",
+ * and the submission was paused.
+ */
+describe('a metric the plan does not include', () => {
+  it('is not reported as an exhausted quota', () => {
+    const summary = service.summariseUsage(Plan.FREE, {});
+    const otp = summary.find((entry) => entry.metric === 'otp_sends');
+
+    // Absent entirely: a meter reading 0 of 0 is not information.
+    expect(otp).toBeUndefined();
+  });
+
+  it('leaves no entry claiming to be exceeded on a fresh free install', () => {
+    // The precise condition the banner renders on.
+    const summary = service.summariseUsage(Plan.FREE, {});
+
+    expect(summary.filter((entry) => entry.exceeded)).toEqual([]);
+  });
+
+  it('never reports NaN as a percentage', () => {
+    // 0 / 0 serialises to null, which the UI reads as "unlimited".
+    for (const entry of service.summariseUsage(Plan.FREE, {})) {
+      expect(Number.isNaN(entry.percentUsed as number)).toBe(false);
+    }
+  });
+
+  it('still reports a shop that used the feature before downgrading', () => {
+    const summary = service.summariseUsage(Plan.FREE, { otp_sends: 12 });
+    const otp = summary.find((entry) => entry.metric === 'otp_sends');
+
+    // They genuinely are over: the plan allows none and they have sent twelve.
+    expect(otp?.exceeded).toBe(true);
+    expect(otp?.percentUsed).toBe(100);
+  });
+});
+
+describe('metrics the plan does include', () => {
+  it('reports normal usage without claiming exhaustion', () => {
+    const summary = service.summariseUsage(Plan.FREE, { cod_orders: 1 });
+    const orders = summary.find((entry) => entry.metric === 'cod_orders');
+
+    expect(orders?.exceeded).toBe(false);
+    expect(orders?.limit).toBe(50);
+  });
+
+  it('still flags a genuine overage', () => {
+    const summary = service.summariseUsage(Plan.FREE, { cod_orders: 50 });
+
+    expect(summary.find((entry) => entry.metric === 'cod_orders')?.exceeded).toBe(true);
   });
 });

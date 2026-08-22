@@ -319,19 +319,41 @@ const METERED: readonly { metric: UsageMetric; limitKey: keyof typeof PLAN_LIMIT
 ];
 
 export function summariseUsage(plan: Plan, used: Record<string, number>): UsageSummary[] {
-  return METERED.map(({ metric, limitKey }) => {
+  return METERED.flatMap(({ metric, limitKey }) => {
     const limit = PLAN_LIMITS[plan][limitKey] as number | null;
     const quantity = used[metric] ?? 0;
 
-    return {
-      metric,
-      label: USAGE_LABELS[metric] ?? metric,
-      used: quantity,
-      limit,
-      percentUsed: limit === null ? null : Math.min(Math.round((quantity / limit) * 100), 100),
-      exceeded: limit !== null && quantity >= limit,
-      nearLimit: limit !== null && quantity >= limit * USAGE_WARNING_THRESHOLD,
-    };
+    /**
+     * A limit of zero means the plan does not include the feature, not that
+     * its quota is spent — and the two must not be reported the same way.
+     *
+     * `Free` allows no OTP sends, so `0 >= 0` marked it exceeded and every
+     * shop on the free plan opened Plan and usage to a red "you have reached a
+     * monthly limit" banner, for a feature they had never used and could not
+     * use. It cost an App Store submission: the reviewer saw exactly that
+     * banner. `percentUsed` was `0 / 0` on the same row, which is `NaN` and
+     * serialises to `null` — the value the UI reads as "unlimited".
+     *
+     * A shop that used the feature under a richer plan and has since dropped
+     * to one that excludes it *has* genuinely exceeded, so a non-zero count is
+     * still reported.
+     */
+    if (limit === 0 && quantity === 0) return [];
+
+    const exhausted = limit !== null && quantity >= limit;
+
+    return [
+      {
+        metric,
+        label: USAGE_LABELS[metric] ?? metric,
+        used: quantity,
+        limit,
+        percentUsed:
+          limit === null ? null : limit === 0 ? 100 : Math.min(Math.round((quantity / limit) * 100), 100),
+        exceeded: exhausted,
+        nearLimit: exhausted || (limit !== null && quantity >= limit * USAGE_WARNING_THRESHOLD),
+      },
+    ];
   });
 }
 
